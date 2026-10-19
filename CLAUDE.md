@@ -1,8 +1,21 @@
-# Inteligencia Natural (episteme)
+# Episteme, el motor de Inteligencia Natural
 
-Proyecto personal de Maxi. Idea de hace ~20 años: una herramienta para que una comunidad discuta con argumentos en vez de opiniones sueltas (como una sección de comentarios, pero con factos, fuentes e hipótesis). Este repo es el núcleo lógico. La UI y la parte comunitaria vienen después.
+Inteligencia Natural (IN) es el proyecto de Maxi: una herramienta para que una comunidad discuta con argumentos y factos en vez de opiniones sueltas. Episteme es su motor: el núcleo lógico que calcula la credibilidad de la evidencia y el ajuste de las hipótesis. El nombre viene del griego: episteme, conocimiento justificado, frente a doxa, opinión. Este repo es solo el motor; la comunidad, la base de factos y la UI vienen después.
 
 Documento original de diseño (hecho con ChatGPT): `docs/resumen_maestro_sistema_epistemologico.pdf`. Página interactiva con la misma lógica en JS: `docs/lab.html` (abrir en el navegador).
+
+## Registro compartido
+
+Las decisiones del proyecto viven en la planilla "Inteligencia Natural · Registro":
+https://docs.google.com/spreadsheets/d/15ZFi_BMyPrQP24dY5NH8op1ipU06ik_vw1GRMrbeVAM
+
+Maxi trabaja en paralelo con Claude (chat) y con Claude Code, y la planilla es el punto de sincronización.
+
+- Leela antes de trabajar. Si no tenés acceso a Google Sheets, pedile a Maxi que te pase las filas relevantes.
+- Al cerrar una discusión de diseño, agregá una fila por cada idea, decisión, conclusión, tensión o pregunta nueva. Si no podés escribir en la planilla, anotalas en `docs/decisiones.md` con el mismo formato (ID, Tipo, Contenido, Estado, Origen, Relacionado, Fecha, Dónde) para pasarlas después.
+- No borres filas. Si algo cambia, marcá la vieja como "reemplazada" y agregá una nueva que la cite en Relacionado.
+- Las filas con Origen "Maxi" solo las edita Maxi. Si proponés un cambio a una idea suya, agregalo como fila nueva con Origen "Claude".
+- Fuentes de verdad: la idea está en `IDEA.md` (escrito por Maxi), las decisiones en la planilla, la implementación en este repo. Si el código contradice la idea, se corrige el código.
 
 ## Principios decididos por Maxi (no cambiar sin preguntarle)
 
@@ -19,7 +32,7 @@ Lo distribuido (red de nodos, bots, usuarios con árboles personales) es una ide
 
 ## Estado actual
 
-- Java 21, Maven, sin dependencias de runtime, JUnit 5. 25 tests (`mvn test`). `mvn -q compile exec:java` corre `Demo`.
+- Java 17, Maven, sin dependencias de runtime, JUnit 5. 25 tests (`mvn test`). `mvn -q compile exec:java` corre `Demo`.
 - Niveles: fuentes, factos y observaciones (0), estructuras (1), predicciones e hipótesis (2). Ver `README.md` para fórmulas.
 - `engine/Credibility`: punto fijo tipo PageRank en log-odds, amortiguado. W = 4, una afirmación sin sostén vale 0.2.
 - `engine/HypothesisRanker`: ajuste = cobertura − refutación.
