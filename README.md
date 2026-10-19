@@ -15,7 +15,7 @@ mvn -q compile exec:java      # corre Demo con los dos casos
 model/   Node, Source, Relation, RelationType, NodeKind, LogOdds, FactGrade, ids
 store/   Event (sealed), EventLog (append-only), KnowledgeGraph (estado de solo lectura)
 engine/  Credibility, HypothesisRanker (RoH), ConflictDetector, Propagator
-IceCreamCase, SemmelweisCase   casos de prueba con etapas
+SemmelweisCase, BodyworkCase   casos con etapas
 CaseBuilder                    atajos para escribir casos
 Demo                           imprime cada etapa
 ```
@@ -68,7 +68,7 @@ Es continuo: una refutación débil resta poco, pero algo. Una hipótesis que no
 
 ## Casos
 
-**Helado.** Base: "el calor causa ambas" +1.00, "el helado ahoga" −0.51. Una objeción al estudio sobre calambres (muestra de 12 personas) baja ese facto de 0.84 a 0.28 sin borrarlo, y "el helado ahoga" sube a +0.05. Una objeción al termómetro baja el dato de temperatura a 0.24 y deja por probar las predicciones del calor.
+**Bodywork.** El piloto del método de Maxi (cluster "desconexión"), con sus observaciones y las respuestas del 19/10. Casi todo se apoya en una sola fuente, la práctica de Maxi; lo más creíble es la liberación rápida dentro de una sesión, que tiene dos fuentes independientes.
 
 **Semmelweis.** Todas las fuentes sobre mortalidad derivan de los registros del hospital y cuentan como una. A principios de 1847 las cuatro hipótesis de la época quedan negativas y ninguna explica el patrón de los cadáveres. La hipótesis cadavérica entra con +0.81 y una predicción por probar (lavarse las manos), que se confirma en junio (+0.85). La objeción de 1848 (antes y después sin grupo de control) baja ese dato de 0.88 a 0.55, pero la hipótesis apenas cambia (+0.84) porque no se apoya solo en él.
 

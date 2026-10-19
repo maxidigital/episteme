@@ -32,11 +32,11 @@ Lo distribuido (red de nodos, bots, usuarios con árboles personales) es una ide
 
 ## Estado actual
 
-- Java 17, Maven, sin dependencias de runtime, JUnit 5. 25 tests (`mvn test`). `mvn -q compile exec:java` corre `Demo`.
+- Java 17, Maven, sin dependencias de runtime, JUnit 5. 21 tests (`mvn test`). `mvn -q compile exec:java` corre `Demo`.
 - Niveles: fuentes, factos y observaciones (0), estructuras (1), predicciones e hipótesis (2). Ver `README.md` para fórmulas.
 - `engine/Credibility`: punto fijo tipo PageRank en log-odds, amortiguado. W = 4, una afirmación sin sostén vale 0.2.
 - `engine/HypothesisRanker`: ajuste = cobertura − refutación.
-- Casos: `IceCreamCase` (correlación no es causa) y `SemmelweisCase` (fiebre puerperal 1847, con fuentes reales y la objeción de 1848). Cada caso tiene etapas = versiones del log.
+- Casos: `SemmelweisCase` (fiebre puerperal 1847, con fuentes reales y la objeción de 1848) y `BodyworkCase` (piloto del método de Maxi). Cada caso tiene etapas = versiones del log. El caso del helado se eliminó por pedido de Maxi: era demasiado pelado.
 - `docs/lab.html` replica el motor en JS y da los mismos números que Java a 6 decimales. Si se cambia la lógica, cambiar los dos y verificar paridad.
 
 ## Antecedentes (para no reinventar)

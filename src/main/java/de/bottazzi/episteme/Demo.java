@@ -15,16 +15,15 @@ public final class Demo {
 
     public static void main(String[] args) {
         Locale.setDefault(Locale.ROOT);
-        var ice = IceCreamCase.seed();
-        stage("Helado: base", ice.log().stateAt(ice.base()));
-        stage("Helado: objecion a F4", ice.log().stateAt(ice.f4Challenged()));
-        stage("Helado: objecion a F3", ice.log().stateAt(ice.f3Challenged()));
-
         var sem = SemmelweisCase.seed();
         stage("Semmelweis: principios de 1847", sem.log().stateAt(sem.early()));
         stage("Semmelweis: muere Kolletschka", sem.log().stateAt(sem.kolletschka()));
         stage("Semmelweis: cal clorada", sem.log().stateAt(sem.handwashing()));
         stage("Semmelweis: objecion de 1848", sem.log().stateAt(sem.objection()));
+
+        var bw = BodyworkCase.seed();
+        stage("Bodywork: piloto", bw.log().stateAt(bw.pilot()));
+        stage("Bodywork: con las respuestas de Maxi", bw.log().stateAt(bw.answers()));
     }
 
     private static void stage(String title, KnowledgeGraph g) {
