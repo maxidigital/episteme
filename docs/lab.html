@@ -1,0 +1,737 @@
+<title>Laboratorio Episteme</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: cuaderno de laboratorio. Escenarios arriba, grafo como figura central, debajo RoH a la izquierda y el nodo seleccionado a la derecha. */
+:root {
+  --bg: #F2F4F1;
+  --surface: #FFFFFF;
+  --ink: #1B2A2A;
+  --muted: #5E6B69;
+  --line: #D3DBD7;
+  --accent: #0F6E6A;
+  --accent-soft: #DCEDEB;
+  --warn: #A85F0A;
+  --warn-soft: #F6E7D2;
+  --reject: #9AA3A1;
+  --f-display: "Literata", Georgia, serif;
+  --f-body: "IBM Plex Sans", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111716; --surface: #19211F; --ink: #E3EBE9; --muted: #95A3A0; --line: #2B3735;
+    --accent: #52BAB1; --accent-soft: #1D3533; --warn: #E3A251; --warn-soft: #3A2C19; --reject: #5D6866;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111716; --surface: #19211F; --ink: #E3EBE9; --muted: #95A3A0; --line: #2B3735;
+  --accent: #52BAB1; --accent-soft: #1D3533; --warn: #E3A251; --warn-soft: #3A2C19; --reject: #5D6866;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 48px;
+}
+.wrap { max-width: 1120px; margin: 0 auto; display: grid; gap: 22px; }
+h1 { font-family: var(--f-display); font-weight: 650; font-size: 1.9rem; margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+h2 { font-family: var(--f-display); font-weight: 500; font-size: 1.2rem; margin: 0; }
+.lede { color: var(--muted); max-width: 68ch; margin: 6px 0 0; }
+.label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; min-width: 0; }
+
+.scenarios { display: grid; gap: 12px; }
+.scen-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+button { font: inherit; cursor: pointer; }
+.chipbtn {
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  border-radius: 999px; padding: 6px 14px; font-size: 0.9rem;
+}
+.chipbtn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.chipbtn:focus-visible, .seg button:focus-visible, svg g.node:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.scen-text { max-width: 78ch; margin: 0; }
+.scen-text strong { color: var(--warn); font-weight: 600; }
+
+.figure { padding: 10px 6px 4px; }
+.graph-scroll { overflow-x: auto; }
+svg.graph { display: block; width: 100%; min-width: 620px; height: auto; }
+.legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 0.8rem; color: var(--muted); padding: 6px 12px 8px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+.cols { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+@media (max-width: 860px) { .cols { grid-template-columns: 1fr; } }
+.stack { display: grid; gap: 22px; min-width: 0; }
+
+.roh { display: grid; gap: 14px; margin-top: 14px; }
+.hyp { display: grid; grid-template-columns: 2.2rem minmax(0, 1fr) auto; gap: 4px 12px; padding-top: 14px; border-top: 1px solid var(--line); }
+.hyp:first-child { border-top: none; padding-top: 0; }
+.rank { font-family: var(--f-display); font-size: 1.5rem; color: var(--muted); line-height: 1.1; }
+.hyp-title { font-weight: 600; }
+.fit { font-family: var(--f-mono); font-size: 1.35rem; font-weight: 500; text-align: right; }
+.fit.neg { color: var(--warn); }
+.bar { grid-column: 2 / 4; height: 6px; background: var(--line); border-radius: 3px; position: relative; overflow: hidden; }
+.bar i { position: absolute; top: 0; bottom: 0; background: var(--accent); }
+.bar i.neg { background: var(--warn); }
+.bar b { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--muted); }
+.detail { grid-column: 2 / 4; font-size: 0.85rem; color: var(--muted); display: grid; gap: 3px; }
+.detail .mono { color: var(--ink); }
+.tags { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.tag { font-family: var(--f-mono); font-size: 0.75rem; padding: 1px 7px; border-radius: 4px; background: var(--accent-soft); color: var(--ink); }
+.tag.off { background: transparent; border: 1px dashed var(--reject); color: var(--muted); }
+.tag.warn { background: var(--warn-soft); }
+
+.kind { display: flex; gap: 8px; align-items: baseline; }
+.statement { font-family: var(--f-display); font-size: 1.08rem; margin: 6px 0 14px; text-wrap: balance; }
+.seg { display: flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { flex: 1 1 auto; border: 0; border-right: 1px solid var(--line); background: transparent; color: var(--ink); padding: 7px 10px; font-size: 0.88rem; }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+.row { display: flex; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+.row input[type="range"] { flex: 1 1 140px; accent-color: var(--accent); }
+.row input:disabled { opacity: 0.4; }
+.readout { font-size: 0.85rem; color: var(--muted); margin-top: 8px; }
+
+.list { display: grid; gap: 8px; margin: 10px 0 0; padding: 0; list-style: none; }
+.list li { display: grid; grid-template-columns: 3.2rem minmax(0, 1fr); gap: 10px; font-size: 0.88rem; align-items: baseline; }
+.list .num { font-family: var(--f-mono); text-align: right; }
+.path { color: var(--muted); font-family: var(--f-mono); font-size: 0.78rem; overflow-wrap: anywhere; }
+.empty { color: var(--muted); font-size: 0.88rem; margin: 10px 0 0; }
+
+.conflict { border: 1px solid var(--warn); background: var(--warn-soft); border-radius: 8px; padding: 12px; margin-top: 10px; display: grid; gap: 8px; }
+.conflict .seg { border-color: var(--warn); background: var(--surface); }
+.conflict .seg button { border-color: var(--warn); font-size: 0.8rem; padding: 5px 8px; }
+.conflict .seg button[aria-pressed="true"] { background: var(--warn); }
+.note { font-size: 0.82rem; color: var(--muted); }
+code { font-family: var(--f-mono); font-size: 0.85em; }
+
+svg text { font-family: var(--f-body); }
+svg .nid { font-family: var(--f-mono); font-weight: 500; font-size: 12px; fill: var(--ink); }
+svg .nlabel { font-size: 11px; fill: var(--muted); }
+svg .rowlabel { font-size: 10.5px; letter-spacing: 0.08em; fill: var(--muted); font-weight: 600; }
+svg .elabel { font-family: var(--f-mono); font-size: 10px; fill: var(--muted); }
+svg .badge { font-family: var(--f-mono); font-size: 10px; font-weight: 500; fill: var(--surface); }
+svg g.node { cursor: pointer; outline: none; }
+@media (prefers-reduced-motion: no-preference) { svg g.node rect.body { transition: fill 0.2s, stroke 0.2s; } }
+.conflict.rival { border-color: var(--line); background: transparent; }
+.kindtag { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; color: var(--warn); }
+.conflict.rival .kindtag { color: var(--muted); }
+.cases { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.casebtn { border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--muted); padding: 4px 2px; margin-right: 14px; font-size: 0.95rem; font-weight: 500; }
+.casebtn[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.casebtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sources { font-size: 0.8rem; color: var(--muted); }
+.sources a { color: var(--accent); }
+.pred { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); gap: 8px; align-items: baseline; }
+.verdict { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; padding: 1px 6px; border-radius: 4px; text-align: center; }
+.v-CONFIRMED { background: var(--accent-soft); color: var(--accent); }
+.v-REFUTED { background: var(--warn-soft); color: var(--warn); }
+.v-CONTESTED { background: var(--warn-soft); color: var(--ink); outline: 1px solid var(--warn); }
+.v-PENDING { border: 1px dashed var(--reject); color: var(--muted); }
+.srcs { display: grid; gap: 10px; margin-top: 10px; }
+.src { display: grid; gap: 4px; }
+.src-head { display: flex; justify-content: space-between; gap: 8px; font-size: 0.86rem; }
+.src-head .mono { white-space: nowrap; }
+.src-meta { font-size: 0.78rem; color: var(--muted); }
+.src input[type="range"] { width: 100%; accent-color: var(--accent); }
+.cite { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; font-size: 0.85rem; }
+.derivs { font-size: 0.85rem; display: grid; gap: 4px; margin-top: 6px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <nav class="cases" id="cases" aria-label="Casos"></nav>
+    <div class="label" id="caseKicker"></div>
+    <h1 id="caseTitle"></h1>
+    <p class="lede" id="caseLede"></p>
+  </header>
+
+  <section class="panel scenarios" aria-label="Escenarios">
+    <div class="scen-buttons" id="scenButtons"></div>
+    <p class="scen-text" id="scenText"></p>
+  </section>
+
+  <section class="panel figure" aria-label="Grafo">
+    <div class="graph-scroll"><svg class="graph" id="graph" viewBox="0 0 780 400" role="img" aria-label="Grafo de factos, estructuras e hipótesis"></svg></div>
+    <div class="legend">
+      <span><svg width="26" height="8"><line x1="0" y1="4" x2="26" y2="4" stroke="var(--reject)" stroke-width="1.3"/></svg>sale de / predice</span>
+      <span><svg width="26" height="8"><line x1="0" y1="4" x2="26" y2="4" stroke="var(--accent)" stroke-width="2.5"/></svg>se cumple según</span>
+      <span><svg width="26" height="8"><line x1="0" y1="4" x2="26" y2="4" stroke="var(--warn)" stroke-width="2" stroke-dasharray="5 4"/></svg>falla según</span>
+      <span><svg width="26" height="8"><line x1="0" y1="4" x2="26" y2="4" stroke="var(--warn)" stroke-width="2.4" stroke-dasharray="1 4" stroke-linecap="round"/></svg>objeta</span>
+      <span>número arriba a la derecha: credibilidad, que nunca es 0 ni 1 (o ajuste, en hipótesis)</span>
+      <span><svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="var(--warn)"/></svg>a revisar si cambia el nodo seleccionado</span>
+    </div>
+  </section>
+
+  <div class="cols">
+    <section class="panel" aria-label="Ranking de hipótesis">
+      <h2>Ranking de hipótesis</h2>
+      <p class="note">Cada hipótesis se juzga por sus predicciones. Cobertura = credibilidad de las estructuras que confirman alguna predicción / credibilidad de todas las estructuras. Refutación = credibilidad de lo que contradice cada predicción. Ajuste = cobertura − refutación. Lo único que se ingresa a mano es la confianza de base en cada fuente.</p>
+      <div class="roh" id="roh"></div>
+    </section>
+
+    <div class="stack">
+      <section class="panel" aria-label="Nodo seleccionado" id="nodePanel"></section>
+      <section class="panel" aria-label="Fuentes">
+        <h2>Fuentes</h2>
+        <p class="note">La confianza de base es el ancla del cálculo y se puede discutir como cualquier otra cosa. Las copias cuentan como una sola fuente independiente.</p>
+        <div id="sources-panel" class="srcs"></div>
+      </section>
+      <section class="panel" aria-label="Conflictos">
+        <h2>Conflictos</h2>
+        <div id="conflicts"></div>
+      </section>
+    </div>
+  </div>
+  <p class="sources" id="sources"></p>
+</div>
+
+<script>
+(() => {
+  // ---------- Casos (idénticos a IceCreamCase.java y SemmelweisCase.java) ----------
+  // stage: etapa en la que aparece el nodo, la fuente o la relación.
+  const RID = (from, type, to) => `r-${from.toLowerCase()}-${type.toLowerCase()}-${to.toLowerCase()}`;
+  const R = (stage, from, type, to, s = 1.0) => ({ id: RID(from, type, to), from, type, to, s, stage });
+  const derive = (stage, st, ...fs) => fs.map(f => R(stage, st, 'DERIVED_FROM', f));
+  const pred = (stage, h, ...ps) => ps.map(p => R(stage, h, 'PREDICTS', p));
+  const cite = (stage, n, src, q) => R(stage, n, 'SOURCED_FROM', src, q);
+  const at = (layout) => Object.fromEntries(layout.flatMap(([y, xs, ids]) => ids.map((id, i) => [id, { x: xs[i], y }])));
+  const X5 = [172, 336, 500, 664, 828], X6 = [90, 254, 418, 582, 746, 910];
+  const withPos = (nodes, pos) => { for (const k in nodes) Object.assign(nodes[k], pos[k]); return nodes; };
+
+  const CASES = {
+    helado: {
+      tab: 'Helado y ahogamientos',
+      kicker: 'Caso de prueba · correlación no es causa',
+      title: 'Helado, ahogamientos y calor',
+      lede: 'Cada hipótesis hace predicciones y la evidencia las cumple o las hace fallar. La credibilidad de cada facto sale de sus fuentes y de las objeciones que recibe, y nunca llega a 0 ni a 1. Nada se borra: para debilitar un dato hay que traer una objeción con su propia fuente.',
+      view: [1000, 590],
+      sources: {
+        'src-comercio': { d: 'Registro de ventas de la cámara de comercio', prior: 0.90, stage: 0 },
+        'src-municipio': { d: 'Registro municipal de incidentes en playas', prior: 0.90, stage: 0 },
+        'src-meteo': { d: 'Servicio meteorológico nacional', prior: 0.95, stage: 0 },
+        'src-medico': { d: 'Estudio clínico sobre calambres y digestión', prior: 0.85, stage: 0 },
+        'src-comunicado': { d: 'Comunicado de una asociación de guardavidas', prior: 0.60, stage: 0 },
+        'src-diario-a': { d: 'Diario A reproduce el comunicado', prior: 0.60, from: 'src-comunicado', stage: 0 },
+        'src-diario-b': { d: 'Diario B reproduce el comunicado', prior: 0.60, from: 'src-comunicado', stage: 0 },
+        'src-diario-c': { d: 'Diario C cita al diario A', prior: 0.50, from: 'src-diario-a', stage: 0 },
+        'src-revision': { d: 'Revisión metodológica de estudios sobre calambres', prior: 0.80, stage: 1 },
+        'src-informe': { d: 'Informe técnico de calibración de estaciones', prior: 0.85, stage: 2 },
+      },
+      nodes: withPos({
+        F1: { kind: 'F', stage: 0, short: 'Helado récord', text: 'Las ventas de helado en julio fueron las más altas del año' },
+        F2: { kind: 'F', stage: 0, short: 'Ahogamientos récord', text: 'Los ahogamientos en julio fueron los más altos del año' },
+        F3: { kind: 'F', stage: 0, short: 'Calor récord', text: 'La temperatura media de julio fue la más alta del año' },
+        F4: { kind: 'F', stage: 0, short: 'Comer no da calambres', text: 'Comer antes de nadar no aumenta de forma relevante el riesgo de calambres' },
+        F5: { kind: 'F', stage: 1, short: 'Muestra de 12', text: 'El estudio de F4 se hizo con una muestra de 12 personas' },
+        F6: { kind: 'F', stage: 2, short: 'Termómetro mal', text: 'El termómetro de la estación central estuvo mal calibrado en julio' },
+        S1: { kind: 'S', stage: 0, short: 'Helado ~ ahogamientos', text: 'Ventas de helado y ahogamientos suben juntas' },
+        S2: { kind: 'S', stage: 0, short: 'Calor ~ helado', text: 'Temperatura y ventas de helado suben juntas' },
+        S3: { kind: 'S', stage: 0, short: 'Calor ~ ahogamientos', text: 'Temperatura y ahogamientos suben juntas' },
+        P1: { kind: 'P', stage: 0, short: 'Suben juntos', text: 'Ventas de helado y ahogamientos deberían subir juntas' },
+        P2: { kind: 'P', stage: 0, short: 'Comer da calambres', text: 'Comer antes de nadar debería aumentar el riesgo de calambres' },
+        P3: { kind: 'P', stage: 0, short: 'Calor → más helado', text: 'Con más calor debería venderse más helado' },
+        P4: { kind: 'P', stage: 0, short: 'Calor → más ahogados', text: 'Con más calor debería haber más ahogamientos' },
+        P5: { kind: 'P', stage: 0, short: 'No se repite', text: 'La relación no debería repetirse en otros años ni lugares' },
+        H1: { kind: 'H', stage: 0, short: 'El helado ahoga', text: 'Comer helado causa ahogamientos' },
+        H2: { kind: 'H', stage: 0, short: 'El calor causa ambas', text: 'El calor aumenta tanto el consumo de helado como el tiempo en el agua' },
+        H3: { kind: 'H', stage: 0, short: 'Coincidencia', text: 'La coincidencia es casual' },
+      }, at([
+        [80, [172, 418, 828], ['H1', 'H2', 'H3']],
+        [200, [90, 254, 418, 582, 828], ['P2', 'P1', 'P3', 'P4', 'P5']],
+        [320, [254, 418, 582], ['S1', 'S2', 'S3']],
+        [440, [90, 254, 418, 582], ['F4', 'F1', 'F2', 'F3']],
+        [540, [90, 760], ['F5', 'F6']],
+      ])),
+      rels: [
+        cite(0, 'F1', 'src-comercio', 0.9), cite(0, 'F2', 'src-municipio', 0.9), cite(0, 'F3', 'src-meteo', 0.95), cite(0, 'F4', 'src-medico', 0.9),
+        ...derive(0, 'S1', 'F1', 'F2'), ...derive(0, 'S2', 'F3', 'F1'), ...derive(0, 'S3', 'F3', 'F2'),
+        cite(0, 'H1', 'src-diario-a', 0.4), cite(0, 'H1', 'src-diario-b', 0.4), cite(0, 'H1', 'src-diario-c', 0.3),
+        ...pred(0, 'H1', 'P1', 'P2'), ...pred(0, 'H2', 'P1', 'P3', 'P4'), ...pred(0, 'H3', 'P5'),
+        R(0, 'P1', 'CONFIRMED_BY', 'S1'), R(0, 'P2', 'REFUTED_BY', 'F4'), R(0, 'P3', 'CONFIRMED_BY', 'S2'), R(0, 'P4', 'CONFIRMED_BY', 'S3'),
+        R(0, 'H1', 'CONTRADICTS', 'H2', 0.5),
+        cite(1, 'F5', 'src-revision', 0.9), R(1, 'F5', 'UNDERMINES', 'F4', 0.8),
+        cite(2, 'F6', 'src-informe', 0.9), R(2, 'F6', 'UNDERMINES', 'F3', 1.0),
+      ],
+      scenarios: [
+        { name: '1. Caso base', stage: 0, sel: 'H1',
+          text: '"El calor causa ambas" (H2) predice las tres correlaciones y las tres se cumplen: +1.00. "El helado ahoga" (H1) acierta una, pero su mecanismo, que comer antes de nadar da calambres, falla según F4: queda en −0.51. "Coincidencia" no gana ni pierde porque su única predicción nunca se probó. La evidencia directa de H1 son tres diarios que copian un comunicado: 3 citas, 1 sola fuente independiente.' },
+        { name: '2. Objeción al estudio', stage: 1, sel: 'F4',
+          text: 'Alguien trae una revisión metodológica: el estudio sobre calambres tenía 12 personas. F4 no se borra: su credibilidad baja de 0.84 a 0.28. La predicción de H1 que fallaba queda "por probar", pero todavía resta un poco, porque F4 no llegó a cero. H1 sube a +0.05 y pasa al segundo lugar.' },
+        { name: '3. Objeción al termómetro', stage: 2, sel: 'F3',
+          text: 'Un informe técnico dice que el termómetro estaba mal calibrado. F3 baja de 0.90 a 0.24, y con él las dos correlaciones con el calor, porque un patrón es tan creíble como su pata más débil. Las predicciones de H2 sobre el calor quedan por probar. H1 sube a +0.36, porque esas correlaciones débiles ya casi no cuentan en su contra. Nada llegó a cero: si alguien rebate el informe, todo vuelve.' },
+      ],
+      footer: '',
+    },
+
+    semmelweis: {
+      tab: 'Semmelweis, 1847',
+      kicker: 'Caso histórico · Hospital General de Viena',
+      title: 'La fiebre puerperal',
+      lede: 'En la clínica 1, atendida por médicos y estudiantes, morían muchas más madres que en la clínica 2, atendida por parteras. Las etapas muestran el árbol tal como se podía armar en cada momento; lo que todavía no existía aparece tenue y no cuenta. La credibilidad de cada dato sale de sus fuentes, y todas las fuentes sobre la mortalidad derivan de los mismos registros del hospital.',
+      view: [1000, 700],
+      sources: {
+        'src-reg': { d: 'Registros de mortalidad del Hospital General de Viena', prior: 0.90, stage: 0 },
+        'src-etio': { d: 'Semmelweis, Etiología de la fiebre puerperal (1861)', prior: 0.80, from: 'src-reg', stage: 0 },
+        'src-wiki': { d: 'Wikipedia, Ignaz Semmelweis', prior: 0.70, from: 'src-etio', stage: 0 },
+        'src-jll': { d: 'James Lind Library', prior: 0.80, from: 'src-etio', stage: 0 },
+        'src-aut': { d: 'Informe de autopsia de Jakob Kolletschka', prior: 0.85, stage: 1 },
+        'src-gaz': { d: 'Gazette médicale de Paris, editorial', prior: 0.70, stage: 3 },
+      },
+      nodes: withPos({
+        F1:  { kind: 'F', stage: 0, short: 'Clínica 1: ~10%', text: 'Clínica 1 (médicos y estudiantes): mortalidad cercana al 10% entre 1841 y 1846' },
+        F2:  { kind: 'F', stage: 0, short: 'Clínica 2: <4%', text: 'Clínica 2 (parteras): mortalidad por debajo del 4% en el mismo período' },
+        F3:  { kind: 'F', stage: 0, short: 'Admisión alternada', text: 'Las pacientes se asignaban a una u otra clínica en días alternos' },
+        F4:  { kind: 'F', stage: 0, short: 'Clínica 2 más llena', text: 'La clínica 2 estaba siempre más hacinada que la 1' },
+        F5:  { kind: 'F', stage: 0, short: 'Partos en la calle', text: 'Entre las mujeres que parían en la calle la fiebre era rara' },
+        F6:  { kind: 'F', stage: 0, short: 'Médicos de autopsias', text: 'En la clínica 1 médicos y estudiantes venían de hacer autopsias; las parteras no tocaban cadáveres' },
+        F7:  { kind: 'F', stage: 0, short: 'Cura sin campanilla', text: 'Cambiar el recorrido del cura, sin la campanilla, no redujo la mortalidad' },
+        F8:  { kind: 'F', stage: 0, short: 'Otra posición', text: 'Adoptar en la clínica 1 la posición de parto de la clínica 2 no redujo la mortalidad' },
+        F9:  { kind: 'F', stage: 1, short: 'Muere Kolletschka', text: 'Kolletschka murió tras cortarse en una autopsia, con hallazgos iguales a los de la fiebre puerperal' },
+        F10: { kind: 'F', stage: 2, short: 'Cal clorada: 2.2%', text: 'Con lavado de manos con cal clorada (desde mayo), la clínica 1 bajó de 18.3% en abril a 2.2% en junio y 1.2% en julio' },
+        F11: { kind: 'F', stage: 3, short: 'Sin grupo de control', text: 'Una caída de la mortalidad después de una intervención, sin grupo de control, no prueba que la intervención la causó' },
+        S1: { kind: 'S', stage: 0, short: 'Clínica 1 > clínica 2', text: 'La clínica 1 mata mucho más que la 2, con pacientes comparables' },
+        S2: { kind: 'S', stage: 0, short: 'No es el hacinamiento', text: 'La diferencia no sigue al hacinamiento: la clínica más llena mata menos' },
+        S3: { kind: 'S', stage: 0, short: 'Calle < clínica 1', text: 'Fuera de la clínica (partos en la calle) hay menos fiebre que en la clínica 1' },
+        S4: { kind: 'S', stage: 0, short: 'Sigue a los cadáveres', text: 'La diferencia acompaña al contacto con cadáveres' },
+        S5: { kind: 'S', stage: 1, short: 'Herida = mismo cuadro', text: 'Una herida con material de autopsia produce el mismo cuadro' },
+        S6: { kind: 'S', stage: 2, short: 'Sin contacto, cae', text: 'Al cortar el contacto con material cadavérico, la mortalidad cae' },
+        P1: { kind: 'P', stage: 0, short: 'Clínica 1 mata más', text: 'La clínica 1 debería matar más que la 2' },
+        P2: { kind: 'P', stage: 0, short: 'Mismo aire, igual', text: 'Dos clínicas vecinas, con el mismo aire, deberían tener mortalidad parecida' },
+        P3: { kind: 'P', stage: 0, short: 'Más llena, más muertes', text: 'La clínica más llena debería matar más' },
+        P4: { kind: 'P', stage: 0, short: 'Afuera, menos fiebre', text: 'Fuera del hospital debería haber menos fiebre' },
+        P5: { kind: 'P', stage: 0, short: 'Otro recorrido, baja', text: 'Cambiar el recorrido del cura debería bajar la mortalidad' },
+        P6: { kind: 'P', stage: 0, short: 'Otra posición, baja', text: 'Cambiar la posición de parto debería bajar la mortalidad' },
+        P7: { kind: 'P', stage: 1, short: 'Sigue a cadáveres', text: 'La mortalidad debería acompañar al contacto con cadáveres' },
+        P8: { kind: 'P', stage: 1, short: 'Herida, mismo cuadro', text: 'Una herida con material de autopsia debería producir el mismo cuadro' },
+        P9: { kind: 'P', stage: 1, short: 'Lavarse, baja', text: 'Lavarse las manos antes de atender partos debería bajar la mortalidad' },
+        H1: { kind: 'H', stage: 0, short: 'Miasma', text: 'Miasma: un aire viciado o una atmósfera epidémica' },
+        H2: { kind: 'H', stage: 0, short: 'Hacinamiento', text: 'Hacinamiento' },
+        H3: { kind: 'H', stage: 0, short: 'Miedo al cura', text: 'El miedo que provoca el cura al pasar con la campanilla' },
+        H4: { kind: 'H', stage: 0, short: 'Posición de parto', text: 'La posición de parto' },
+        H5: { kind: 'H', stage: 1, short: 'Partículas cadavéricas', text: 'Partículas cadavéricas que los médicos llevan en las manos' },
+      }, at([
+        [80, X5, ['H1', 'H2', 'H3', 'H4', 'H5']],
+        [195, X5, ['P2', 'P3', 'P1', 'P4', 'P7']],
+        [270, [172, 418, 664, 910], ['P5', 'P6', 'P8', 'P9']],
+        [390, X6, ['S1', 'S2', 'S3', 'S4', 'S5', 'S6']],
+        [515, X5, ['F3', 'F1', 'F2', 'F4', 'F5']],
+        [590, X5, ['F7', 'F8', 'F6', 'F9', 'F10']],
+        [665, [920], ['F11']],
+      ])),
+      rels: [
+        cite(0, 'F1', 'src-reg', 0.95), cite(0, 'F1', 'src-wiki', 0.9), cite(0, 'F2', 'src-reg', 0.95), cite(0, 'F2', 'src-wiki', 0.9),
+        cite(0, 'F3', 'src-jll', 0.9), cite(0, 'F4', 'src-etio', 0.8), cite(0, 'F4', 'src-wiki', 0.8), cite(0, 'F5', 'src-etio', 0.7),
+        cite(0, 'F6', 'src-etio', 0.9), cite(0, 'F6', 'src-wiki', 0.9), cite(0, 'F7', 'src-etio', 0.8), cite(0, 'F8', 'src-etio', 0.8),
+        ...derive(0, 'S1', 'F1', 'F2', 'F3'), ...derive(0, 'S2', 'F4', 'F1', 'F2'), ...derive(0, 'S3', 'F5', 'F1'), ...derive(0, 'S4', 'F6', 'F1', 'F2'),
+        ...pred(0, 'H1', 'P2'), ...pred(0, 'H2', 'P3', 'P4'), ...pred(0, 'H3', 'P1', 'P5'), ...pred(0, 'H4', 'P1', 'P6'),
+        R(0, 'P1', 'CONFIRMED_BY', 'S1'), R(0, 'P2', 'REFUTED_BY', 'S1'), R(0, 'P3', 'REFUTED_BY', 'S2'),
+        R(0, 'P4', 'CONFIRMED_BY', 'S3'), R(0, 'P5', 'REFUTED_BY', 'F7'), R(0, 'P6', 'REFUTED_BY', 'F8'),
+        cite(1, 'F9', 'src-aut', 0.9), cite(1, 'F9', 'src-etio', 0.9), ...derive(1, 'S5', 'F9'),
+        ...pred(1, 'H5', 'P1', 'P4', 'P7', 'P8', 'P9'),
+        R(1, 'P7', 'CONFIRMED_BY', 'S4'), R(1, 'P8', 'CONFIRMED_BY', 'S5'), R(1, 'H5', 'CONTRADICTS', 'H1', 0.6),
+        cite(2, 'F10', 'src-reg', 0.95), cite(2, 'F10', 'src-wiki', 0.9), ...derive(2, 'S6', 'F10'), R(2, 'P9', 'CONFIRMED_BY', 'S6'),
+        cite(3, 'F11', 'src-gaz', 0.9), R(3, 'F11', 'UNDERMINES', 'S6', 0.6),
+      ],
+      scenarios: [
+        { name: '1. Principios de 1847', stage: 0, sel: 'S4',
+          text: 'Las cuatro explicaciones de la época tienen al menos una predicción que falla, y todas quedan negativas. El miasma predice que dos clínicas vecinas deberían morir parecido, y no es así. El hacinamiento predice que la más llena debería matar más, y pasa lo contrario. Cambiar el recorrido del cura o la posición no sirvió. Nadie explica S4: la diferencia acompaña al contacto con cadáveres. Fijate además en F1: aunque lo citen los registros y Wikipedia, cuenta como una sola fuente, porque Wikipedia viene de Semmelweis y Semmelweis de los registros.' },
+        { name: '2. Marzo: muere Kolletschka', stage: 1, sel: 'H5',
+          text: 'Un colega muere después de cortarse en una autopsia, con un cuadro igual al de las madres. El dato tiene dos fuentes realmente independientes, el informe de autopsia y los escritos de Semmelweis, y llega a 0.99. La hipótesis de las partículas cadavéricas cumple cuatro predicciones, no falla ninguna y queda primera con +0.81. Deja una por probar: lavarse las manos.' },
+        { name: '3. Junio: cal clorada', stage: 2, sel: 'P9',
+          text: 'El lavado con cal clorada confirma la predicción pendiente: la mortalidad cae de 18.3% en abril a 2.2% en junio. H5 sube a +0.85.' },
+        { name: '4. 1848: la objeción', stage: 3, sel: 'S6',
+          text: 'Un editorial de la Gazette médicale de Paris objeta que una caída antes y después, sin grupo de control, no prueba que el lavado la causó. Es una objeción válida, y el sistema la registra: S6 baja de 0.88 a 0.55. Pero H5 apenas cambia, de +0.85 a +0.84, porque no se apoya solo en ese dato. Así se ve en el árbol por qué la objeción era correcta y aun así no alcanzaba para descartar la hipótesis.' },
+      ],
+      footer: 'Fuentes: <a href="https://en.wikipedia.org/wiki/Ignaz_Semmelweis" target="_blank" rel="noopener">Wikipedia, Ignaz Semmelweis</a>, <a href="https://www.jameslindlibrary.org/illustrating/articles/ignaz-phillip-semmelweis-studies-of-death-in-childbirth" target="_blank" rel="noopener">James Lind Library</a>, la "Etiología" de Semmelweis según Hempel y, para la objeción de 1848, <a href="https://dc2.philarchive.org/rec/KADWSD" target="_blank" rel="noopener">este trabajo sobre el rechazo de Semmelweis</a>. Las confianzas de base de las fuentes son estimaciones; podés cambiarlas en el panel de fuentes.',
+    },
+  };
+
+  const W = 4.0, PRIOR_CLAIM = 0.2, DAMPING = 0.5, TOL = 1e-10, MAX_IT = 1000, MAXL = 30, CREDIBLE = 0.5;
+  const VERDICT = { CONFIRMED: 'se cumple', REFUTED: 'falla', CONTESTED: 'en disputa', PENDING: 'por probar' };
+  const KIND_LINE = { F: 'Facto · nivel 0', S: 'Estructura · nivel 1', P: 'Predicción · nivel 2', H: 'Hipótesis · nivel 2' };
+  const grade = p => p >= 0.9 ? 'A' : p >= 0.75 ? 'B' : p >= 0.5 ? 'C' : 'D';
+  const clampL = l => Math.max(-MAXL, Math.min(MAXL, l));
+  const logit = p => Math.log(p / (1 - p));
+  const sig = l => 1 / (1 + Math.exp(-clampL(l)));
+
+  let C, NODES, RELS, SRC, SCENARIOS;
+  const state = { caseId: 'semmelweis', stage: 0, priors: {}, selected: null, threshold: 0.1, scenario: 0 };
+
+  function useCase(id) { state.caseId = id; C = CASES[id]; SCENARIOS = C.scenarios; }
+
+  // Vista de la etapa actual: solo lo que ya existe.
+  function view() {
+    NODES = Object.fromEntries(Object.entries(C.nodes).filter(([, n]) => n.stage <= state.stage));
+    SRC = Object.fromEntries(Object.entries(C.sources).filter(([, s]) => s.stage <= state.stage));
+    RELS = C.rels.filter(r => r.stage <= state.stage);
+  }
+  const exists = id => id in NODES || id in SRC;
+  const kindOf = id => id in SRC ? 'SRC' : NODES[id].kind;
+  const isEvidence = id => id in SRC || NODES[id].kind === 'F' || NODES[id].kind === 'S';
+  const priorOf = id => state.priors[id] ?? SRC[id].prior;
+  const rootOf = id => { let s = id; while (SRC[s].from) s = SRC[s].from; return s; };
+  const out = id => RELS.filter(r => r.from === id);
+  const inc = id => RELS.filter(r => r.to === id);
+
+  // ---------- Credibilidad (espejo de engine/Credibility.java) ----------
+  let L = {}, ITER = 0, CONVERGED = false;
+  function computeCredibility() {
+    const ev = [...Object.keys(SRC), ...Object.keys(NODES).filter(isEvidence)];
+    L = {};
+    ev.forEach(id => L[id] = kindOf(id) === 'SRC' ? logit(priorOf(id)) : logit(PRIOR_CLAIM));
+    const p = id => sig(L[id]);
+    const citations = id => {
+      const best = {};
+      out(id).filter(r => r.type === 'SOURCED_FROM').forEach(r => {
+        const v = r.s * p(r.to), root = rootOf(r.to);
+        best[root] = Math.max(best[root] ?? -Infinity, v);
+      });
+      return W * Object.values(best).reduce((a, b) => a + b, 0);
+    };
+    const derived = id => {
+      const ds = out(id).filter(r => r.type === 'DERIVED_FROM').map(r => r.s * p(r.to));
+      return ds.length ? logit(Math.min(...ds)) : logit(PRIOR_CLAIM);
+    };
+    const target = id => {
+      const k = kindOf(id);
+      let base = k === 'SRC' ? logit(priorOf(id)) : k === 'F' ? logit(PRIOR_CLAIM) + citations(id) : derived(id) + citations(id);
+      let push = 0;
+      inc(id).forEach(r => {
+        if (r.type === 'SUPPORTS') push += W * r.s * p(r.from);
+        else if (['UNDERMINES', 'CONTRADICTS', 'TENSION'].includes(r.type)) push -= W * r.s * p(r.from);
+      });
+      out(id).forEach(r => { if (r.type === 'CONTRADICTS' || r.type === 'TENSION') push -= W * r.s * p(r.to); });
+      return base + push;
+    };
+    let it = 0, done = false;
+    while (it < MAX_IT && !done) {
+      it++;
+      const next = {}; let delta = 0;
+      ev.forEach(id => { const v = clampL((1 - DAMPING) * target(id) + DAMPING * L[id]); next[id] = v; delta = Math.max(delta, Math.abs(v - L[id])); });
+      L = next; done = delta < TOL;
+    }
+    ITER = it; CONVERGED = done;
+  }
+  const cred = id => sig(L[id]);
+
+  function predictionStatus(pid) {
+    let conf = 0, ref = 0; const confirmedBy = [], refutedBy = [];
+    out(pid).forEach(r => {
+      if (r.type === 'CONFIRMED_BY') { conf = Math.max(conf, cred(r.to)); confirmedBy.push(r.to); }
+      if (r.type === 'REFUTED_BY') { ref = Math.max(ref, cred(r.to)); refutedBy.push(r.to); }
+    });
+    const yes = conf > CREDIBLE, no = ref > CREDIBLE;
+    const verdict = yes && no ? 'CONTESTED' : yes ? 'CONFIRMED' : no ? 'REFUTED' : 'PENDING';
+    return { p: pid, verdict, conf, ref, confirmedBy, refutedBy };
+  }
+
+  function rank() {
+    const structures = Object.keys(NODES).filter(k => NODES[k].kind === 'S');
+    return Object.keys(NODES).filter(k => NODES[k].kind === 'H').map(h => {
+      const preds = out(h).filter(r => r.type === 'PREDICTS').map(r => predictionStatus(r.to));
+      const confirming = new Set(preds.flatMap(s => s.confirmedBy).filter(n => NODES[n].kind === 'S'));
+      const refutation = preds.reduce((a, s) => a + s.ref, 0);
+      let num = 0, den = 0; const explained = [], unexplained = [];
+      structures.forEach(s => { const w = cred(s); den += w; if (confirming.has(s)) { num += w; explained.push(s); } else unexplained.push(s); });
+      const coverage = den === 0 ? 0 : num / den;
+      const cites = out(h).filter(r => r.type === 'SOURCED_FROM').map(r => r.to);
+      return { h, num, den, coverage, refutation, fit: coverage - refutation, explained, unexplained, preds,
+               cited: cites.length, roots: new Set(cites.map(rootOf)).size };
+    }).sort((a, b) => b.fit - a.fit || a.h.localeCompare(b.h));
+  }
+
+  function conflicts() {
+    const res = [];
+    RELS.forEach(r => {
+      if (r.type === 'CONTRADICTS' || r.type === 'TENSION') {
+        if (kindOf(r.from) === 'H') res.push({ id: r.id, kind: 'rival', a: r.from, b: r.to, i: r.s });
+        else res.push({ id: r.id, kind: 'ev', a: r.from, b: r.to, i: Math.min(cred(r.from), cred(r.to)) * r.s });
+      } else if (r.type === 'UNDERMINES' && cred(r.from) > CREDIBLE) {
+        res.push({ id: r.id, kind: 'undermined', a: r.from, b: r.to, i: cred(r.from) * r.s });
+      }
+    });
+    Object.keys(NODES).filter(k => NODES[k].kind === 'P').forEach(pid => {
+      const st = predictionStatus(pid);
+      const against = st.refutedBy.slice().sort((x, y) => cred(y) - cred(x))[0];
+      if (st.verdict === 'CONTESTED') res.push({ id: pid, kind: 'contested', a: pid, b: against, i: Math.min(st.conf, st.ref) });
+      else if (st.verdict === 'REFUTED') res.push({ id: pid, kind: 'refuted', a: pid, b: against, i: st.ref });
+    });
+    return res.sort((a, b) => b.i - a.i || a.id.localeCompare(b.id));
+  }
+
+  function affectedBy(n) {
+    const res = [];
+    RELS.forEach(r => {
+      if (r.to === n && ['DERIVED_FROM', 'SOURCED_FROM', 'PREDICTS', 'CONFIRMED_BY', 'REFUTED_BY', 'CONTRADICTS', 'TENSION'].includes(r.type)) res.push([r.from, r.s]);
+      if (r.from === n && ['SUPPORTS', 'UNDERMINES', 'CONTRADICTS', 'TENSION'].includes(r.type)) res.push([r.to, r.s]);
+    });
+    return res;
+  }
+
+  function propagate(origin, thr) {
+    if (!exists(origin)) return [];
+    const best = { [origin]: 1 }, parent = {};
+    const queue = [[origin, 1]];
+    while (queue.length) {
+      queue.sort((a, b) => b[1] - a[1]);
+      const [cur, imp] = queue.shift();
+      if (imp < best[cur] - 1e-9) continue;
+      for (const [next, s] of affectedBy(cur)) {
+        const v = imp * s;
+        if (v < thr) continue;
+        if (v > (best[next] || 0) + 1e-9) { best[next] = v; parent[next] = cur; queue.push([next, v]); }
+      }
+    }
+    return Object.entries(best).filter(([k]) => k !== origin).map(([k, v]) => {
+      const path = [k]; let q = k; while (parent[q]) { q = parent[q]; path.unshift(q); }
+      return { node: k, impact: v, path };
+    }).sort((a, b) => b.impact - a.impact || a.node.localeCompare(b.node));
+  }
+
+  // ---------- Render ----------
+  const sign = v => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(2);
+  const fp = p => p >= 0.001 && p <= 0.999 ? p.toFixed(3) : p < 0.001 ? p.toExponential(1) : '1 − ' + (1 - p).toExponential(1);
+  const short2 = v => v.toFixed(2).replace(/^0/, '');
+  const label = id => id in SRC ? SRC[id].d : NODES[id].short;
+  const NS = 'http://www.w3.org/2000/svg';
+  const BW = 150, BH = 46;
+  const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+
+  function renderHeader() {
+    const nav = document.getElementById('cases');
+    nav.innerHTML = Object.entries(CASES).map(([id, c]) => `<button type="button" class="casebtn" id="case-${id}" data-case="${id}" aria-pressed="${id === state.caseId}">${c.tab}</button>`).join('');
+    nav.querySelectorAll('[data-case]').forEach(b => b.addEventListener('click', () => { useCase(b.dataset.case); loadScenario(0); }));
+    document.getElementById('caseKicker').textContent = C.kicker;
+    document.getElementById('caseTitle').textContent = C.title;
+    document.getElementById('caseLede').textContent = C.lede;
+    document.getElementById('sources').innerHTML = C.footer;
+  }
+
+  function renderGraph(fits, statuses) {
+    const svg = document.getElementById('graph');
+    const [vw, vh] = C.view;
+    svg.setAttribute('viewBox', `0 0 ${vw} ${vh}`);
+    svg.style.minWidth = Math.round(vw * 0.8) + 'px';
+    svg.innerHTML = '';
+    const impacts = Object.fromEntries(propagate(state.selected, state.threshold).map(i => [i.node, i.impact]));
+    const ALL = C.nodes;
+    const top = k => Math.min(...Object.values(ALL).filter(n => n.kind === k).map(n => n.y));
+    [['HIPÓTESIS', 'H'], ['PREDICCIONES', 'P'], ['ESTRUCTURAS', 'S'], ['FACTOS', 'F']].forEach(([t, k]) => {
+      el('text', { x: 16, y: top(k) - 32, class: 'rowlabel' }, svg).textContent = t;
+    });
+
+    const edges = el('g', {}, svg);
+    C.rels.filter(r => r.type !== 'SOURCED_FROM' && r.from in ALL && r.to in ALL).forEach(r => {
+      const a = ALL[r.from], b = ALL[r.to];
+      const future = r.stage > state.stage;
+      let d, lx, ly;
+      if (a.y === b.y) {
+        const x1 = Math.min(a.x, b.x), x2 = Math.max(a.x, b.x);
+        if (x2 - x1 <= BW + 120) { d = `M${x1 + BW / 2},${a.y} L${x2 - BW / 2},${b.y}`; lx = (x1 + x2) / 2; ly = a.y - 6; }
+        else { const yt = a.y - BH / 2, cy = yt - 50; d = `M${x1},${yt} Q${(x1 + x2) / 2},${cy} ${x2},${yt}`; lx = (x1 + x2) / 2; ly = (yt + cy) / 2 - 4; }
+      } else if (a.y > b.y) {
+        const x1 = a.x, y1 = a.y - BH / 2, x2 = b.x, y2 = b.y + BH / 2, my = (y1 + y2) / 2;
+        d = `M${x1},${y1} C${x1},${my} ${x2},${my} ${x2},${y2}`;
+      } else {
+        const x1 = a.x, y1 = a.y + BH / 2, x2 = b.x, y2 = b.y - BH / 2, my = (y1 + y2) / 2;
+        d = `M${x1},${y1} C${x1},${my} ${x2},${my} ${x2},${y2}`;
+      }
+      const weak = !future && isEvidence(r.to) && r.type !== 'UNDERMINES' && cred(r.to) < CREDIBLE;
+      const style = r.type === 'CONFIRMED_BY' ? { stroke: 'var(--accent)', 'stroke-width': 2.4 }
+        : r.type === 'REFUTED_BY' ? { stroke: 'var(--warn)', 'stroke-width': 2, 'stroke-dasharray': '5 4' }
+        : r.type === 'UNDERMINES' ? { stroke: 'var(--warn)', 'stroke-width': 2.6, 'stroke-dasharray': '1 5', 'stroke-linecap': 'round' }
+        : r.type === 'CONTRADICTS' ? { stroke: 'var(--warn)', 'stroke-width': 1.2, 'stroke-dasharray': '2 3' }
+        : { stroke: 'var(--reject)', 'stroke-width': 1.2 };
+      el('path', { d, fill: 'none', ...style, opacity: future ? 0.07 : weak ? 0.3 : 0.9 }, edges);
+      if (r.type === 'CONTRADICTS' && !future && kindOf(r.from) === 'H') el('text', { x: lx, y: ly, class: 'elabel', 'text-anchor': 'middle' }, edges).textContent = 'rivales';
+    });
+
+    Object.entries(ALL).forEach(([id, n]) => {
+      const fut = n.stage > state.stage;
+      const g = el('g', { class: 'node', tabindex: 0, role: 'button', 'aria-label': `${id}: ${n.text}`, opacity: fut ? 0.3 : 1 }, svg);
+      const ev = !fut && (n.kind === 'F' || n.kind === 'S');
+      const p = ev ? cred(id) : null;
+      const st = n.kind === 'P' && !fut ? statuses[id] : null;
+      const weak = ev && p < CREDIBLE;
+      const sel = id === state.selected;
+      const rx = n.kind === 'P' ? 18 : 8;
+      el('rect', { class: 'body', x: n.x - BW / 2, y: n.y - BH / 2, width: BW, height: BH, rx,
+        fill: 'var(--surface)', stroke: sel ? 'var(--ink)' : 'var(--line)', 'stroke-width': sel ? 2.2 : 1.2,
+        'stroke-dasharray': weak || fut || (st && st.verdict === 'PENDING') ? '4 3' : 'none' }, g);
+      let tint = null, op = 0;
+      if (ev) { tint = 'var(--accent)'; op = 0.02 + p * 0.22; }
+      if (st && st.verdict === 'CONFIRMED') { tint = 'var(--accent)'; op = 0.22; }
+      if (st && (st.verdict === 'REFUTED' || st.verdict === 'CONTESTED')) { tint = 'var(--warn)'; op = 0.22; }
+      if (tint) el('rect', { x: n.x - BW / 2, y: n.y - BH / 2, width: BW, height: BH, rx, fill: tint, 'fill-opacity': op, 'pointer-events': 'none' }, g);
+      const lab = id + (ev ? ` · ${grade(p)}` : '');
+      el('text', { x: n.x - BW / 2 + 12, y: n.y - 4, class: 'nid', opacity: weak ? 0.6 : 1 }, g).textContent = lab;
+      el('text', { x: n.x - BW / 2 + 12, y: n.y + 13, class: 'nlabel' }, g).textContent = n.short;
+      const val = fut ? 'aún no' : n.kind === 'H' ? sign(fits[id]) : n.kind === 'P' ? VERDICT[st.verdict] : fp(p);
+      el('text', { x: n.x + BW / 2 - 10, y: n.y - 4, class: 'elabel', 'text-anchor': 'end' }, g).textContent = val;
+      if (impacts[id] !== undefined) {
+        el('circle', { cx: n.x + BW / 2 - 2, cy: n.y - BH / 2 + 2, r: 13, fill: 'var(--warn)' }, g);
+        el('text', { x: n.x + BW / 2 - 2, y: n.y - BH / 2 + 5.5, class: 'badge', 'text-anchor': 'middle' }, g).textContent = short2(impacts[id]);
+      }
+      const pick = () => { state.selected = id; render(); };
+      g.addEventListener('click', pick);
+      g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+    });
+  }
+
+  const evidenceList = ids => ids.map(e => `${e} (${fp(cred(e))})`).join(', ');
+  const predLine = st => `<div class="pred"><span class="verdict v-${st.verdict}">${VERDICT[st.verdict]}</span><span><span class="mono">${st.p}</span> ${NODES[st.p].short}${
+    st.confirmedBy.length ? ` · se cumple según ${evidenceList(st.confirmedBy)}` : ''}${
+    st.refutedBy.length ? ` · falla según ${evidenceList(st.refutedBy)}` : ''}</span></div>`;
+
+  function renderRoH(ranking) {
+    document.getElementById('roh').innerHTML = ranking.map((r, i) => {
+      const n = NODES[r.h];
+      const w = Math.min(Math.abs(r.fit), 1) * 50;
+      const barStyle = r.fit >= 0 ? `left:50%;width:${w}%` : `left:${50 - w}%;width:${w}%`;
+      return `<div class="hyp">
+        <div class="rank">${i + 1}</div>
+        <div><div class="hyp-title">${r.h} · ${n.short}</div></div>
+        <div class="fit ${r.fit < 0 ? 'neg' : ''}">${sign(r.fit)}</div>
+        <div class="bar"><b></b><i class="${r.fit < 0 ? 'neg' : ''}" style="${barStyle}"></i></div>
+        <div class="detail">
+          <div>cobertura <span class="mono">${r.num.toFixed(2)} / ${r.den.toFixed(2)} = ${r.coverage.toFixed(2)}</span> · refutación <span class="mono">${r.refutation.toFixed(2)}</span></div>
+          ${r.preds.map(predLine).join('')}
+          ${r.unexplained.length ? `<div class="tags">no cubre ${r.unexplained.map(s => `<span class="tag off">${s}</span>`).join('')}</div>` : ''}
+          ${r.cited ? `<div>evidencia directa: <span class="mono">${r.cited}</span> citas, <span class="mono">${r.roots}</span> fuente independiente (no suma al ajuste)</div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function attacksOn(id) {
+    const res = [];
+    inc(id).forEach(r => { if (['SUPPORTS', 'UNDERMINES', 'CONTRADICTS', 'TENSION'].includes(r.type)) res.push({ other: r.from, type: r.type, s: r.s }); });
+    out(id).forEach(r => { if (r.type === 'CONTRADICTS' || r.type === 'TENSION') res.push({ other: r.to, type: r.type, s: r.s }); });
+    return res;
+  }
+  const ATTACK = { SUPPORTS: 'la apoya', UNDERMINES: 'la objeta', CONTRADICTS: 'la contradice', TENSION: 'está en tensión' };
+
+  function clusterHtml(id) {
+    const cites = out(id).filter(r => r.type === 'SOURCED_FROM');
+    const roots = new Set(cites.map(r => rootOf(r.to)));
+    const ats = attacksOn(id);
+    return `${cites.length ? `<div class="label" style="margin-top:12px">Fuentes citadas · ${roots.size} independiente${roots.size === 1 ? '' : 's'}</div>
+      <div class="derivs">${cites.map(r => `<div class="cite"><span>${SRC[r.to].d}${rootOf(r.to) !== r.to ? ` <span class="src-meta">(raíz: ${SRC[rootOf(r.to)].d})</span>` : ''}</span><span class="mono">cita ${r.s.toFixed(2)} × ${fp(cred(r.to))}</span></div>`).join('')}</div>` : ''}
+      ${ats.length ? `<div class="label" style="margin-top:12px">Debate sobre este nodo</div>
+      <div class="derivs">${ats.map(a => `<div class="cite"><span><span class="mono">${a.other}</span> ${label(a.other)} ${ATTACK[a.type]}</span><span class="mono">${fp(cred(a.other))} × ${a.s.toFixed(1)}</span></div>`).join('')}</div>` : ''}`;
+  }
+
+  function renderNode(ranking, statuses) {
+    const id = state.selected, n = C.nodes[id];
+    const fut = n.stage > state.stage;
+    const prop = fut ? [] : propagate(id, state.threshold);
+    let body = '';
+    if (fut) {
+      body = '<p class="note">Todavía no existe en este momento del caso. Aparece en una etapa posterior.</p>';
+    } else if (n.kind === 'F' || n.kind === 'S') {
+      const p = cred(id);
+      const ds = out(id).filter(r => r.type === 'DERIVED_FROM');
+      const preds = inc(id).filter(r => r.type === 'CONFIRMED_BY' || r.type === 'REFUTED_BY');
+      body = `
+        <div class="label">Credibilidad <span class="mono">${fp(p)}</span> · grado ${grade(p)} · log-odds <span class="mono">${L[id] >= 0 ? '+' : '−'}${Math.abs(L[id]).toFixed(2)}</span></div>
+        <div class="note">${n.kind === 'F' ? 'Sale de sus fuentes y de lo que la apoya u objeta. Sin nada, una afirmación vale 0.2.' : 'La de su pata más débil, más lo que la apoya u objeta.'}</div>
+        ${ds.length ? `<div class="derivs">${ds.map(r => `<div class="cite"><span><span class="mono">${r.to}</span> ${NODES[r.to].short}</span><span class="mono">${fp(cred(r.to))}</span></div>`).join('')}</div>` : ''}
+        ${clusterHtml(id)}
+        ${n.kind === 'S' ? `<div class="readout">${preds.length ? preds.map(r => `${r.type === 'CONFIRMED_BY' ? 'Cumple' : 'Hace fallar'} ${r.from}`).join(' · ') : '<strong style="color:var(--warn)">Ninguna predicción la anticipa: ninguna hipótesis la explica.</strong>'}</div>` : ''}`;
+    } else if (n.kind === 'P') {
+      const st = statuses[id];
+      const by = inc(id).filter(r => r.type === 'PREDICTS').map(r => r.from);
+      body = `<div class="derivs">${predLine(st)}</div>
+        <div class="readout">La hacen: ${by.map(h => `${h} · ${NODES[h].short}`).join(', ')}</div>
+        ${st.verdict === 'PENDING' ? '<p class="note">No hay evidencia creíble en ningún sentido. Es un experimento para hacer.</p>' : ''}`;
+    } else {
+      const r = ranking.find(x => x.h === id), pos = ranking.indexOf(r) + 1;
+      body = `<div class="label">Ajuste <span class="mono">${sign(r.fit)}</span> · puesto ${pos} de ${ranking.length}</div>
+        <div class="note">Cobertura ${r.coverage.toFixed(2)} menos refutación ${r.refutation.toFixed(2)}.</div>
+        <div class="derivs">${r.preds.map(predLine).join('')}</div>`;
+    }
+    const panel = document.getElementById('nodePanel');
+    panel.innerHTML = `
+      <div class="kind"><span class="label">Nodo seleccionado</span><span class="mono">${id}</span></div>
+      <div class="note">${KIND_LINE[n.kind]}</div>
+      <p class="statement">${n.text}</p>
+      ${body}
+      ${fut ? '' : `<div class="label" style="margin-top:18px">Si ${id} cambia, conviene revisar</div>
+      <div class="row" style="margin-top:6px"><label for="thr" class="note">umbral</label>
+        <input type="range" id="thr" min="0" max="0.9" step="0.05" value="${state.threshold}">
+        <span class="mono">${state.threshold.toFixed(2)}</span></div>
+      ${prop.length ? `<ul class="list">${prop.map(i => `<li><span class="num">${i.impact.toFixed(2)}</span><span>${i.node} · ${label(i.node)}<br><span class="path">${i.path.join(' → ')}</span></span></li>`).join('')}</ul>`
+        : '<p class="empty">Nada supera el umbral.</p>'}`}
+      <p class="note" style="margin-top:14px">Cálculo: ${ITER} iteraciones, ${CONVERGED ? 'converge' : 'no converge'}.</p>`;
+    panel.querySelector('#thr')?.addEventListener('input', e => { state.threshold = parseFloat(e.target.value); render(); document.getElementById('thr').focus(); });
+  }
+
+  function renderSources() {
+    const box = document.getElementById('sources-panel');
+    box.innerHTML = Object.entries(SRC).map(([id, s]) => {
+      const pr = priorOf(id), changed = state.priors[id] !== undefined && Math.abs(state.priors[id] - s.prior) > 1e-9;
+      const users = RELS.filter(r => r.type === 'SOURCED_FROM' && r.to === id).map(r => r.from);
+      return `<div class="src">
+        <div class="src-head"><label for="pr-${id}">${s.d}</label><span class="mono">${pr.toFixed(2)}${changed ? ` (era ${s.prior.toFixed(2)})` : ''}</span></div>
+        <input type="range" id="pr-${id}" data-src="${id}" min="0.01" max="0.99" step="0.01" value="${pr}">
+        <div class="src-meta">${s.from ? `copia de: ${SRC[s.from].d} · ` : 'fuente original · '}${users.length ? 'la citan ' + users.join(', ') : 'nadie la cita todavía'}</div>
+      </div>`;
+    }).join('');
+    box.querySelectorAll('[data-src]').forEach(inp => inp.addEventListener('input', e => {
+      state.priors[e.target.dataset.src] = parseFloat(e.target.value); state.scenario = -1; render();
+      document.getElementById('pr-' + e.target.dataset.src)?.focus();
+    }));
+  }
+
+  function renderConflicts() {
+    const cs = conflicts(), box = document.getElementById('conflicts');
+    if (!cs.length) { box.innerHTML = '<p class="empty">Ninguno.</p>'; return; }
+    const KIND = { refuted: 'Predicción que falla', contested: 'Predicción en disputa', undermined: 'Objeción', ev: 'Evidencia contra evidencia', rival: 'Hipótesis rivales' };
+    const WHY = {
+      refuted: c => `${NODES[c.a].short}, pero ${c.b} (${NODES[c.b].short}) dice lo contrario. Intensidad = credibilidad de ${c.b}. Lo paga cada hipótesis que hace esta predicción.`,
+      contested: () => 'Hay evidencia creíble a favor y en contra. Algo está mal medido o falta una distinción.',
+      undermined: c => `${label(c.a)}. Debilita a ${c.b} (${label(c.b)}), que ahora vale ${fp(cred(c.b))}. Nadie la borró: sigue en el árbol y puede recuperarse si alguien rebate la objeción.`,
+      ev: () => 'Dos piezas de evidencia que chocan: cada una debilita a la otra. Gana la que tiene más fuentes independientes.',
+      rival: c => `${NODES[c.a].short} y ${NODES[c.b].short} no pueden ser ciertas a la vez. Es informativo: no penaliza a ninguna.`,
+    };
+    box.innerHTML = cs.map(c => `<div class="conflict ${c.kind === 'rival' ? 'rival' : ''}">
+      <div class="kindtag">${KIND[c.kind]}</div>
+      <div><span class="mono">${c.a} ${c.kind === 'undermined' ? '→' : '↔'} ${c.b}</span> · intensidad <span class="mono">${c.i.toFixed(2)}</span></div>
+      <div class="note">${WHY[c.kind](c)}</div>
+    </div>`).join('');
+  }
+
+  function renderScenarios() {
+    const box = document.getElementById('scenButtons');
+    box.innerHTML = SCENARIOS.map((sc, i) => `<button type="button" class="chipbtn" id="sc-${i}" data-i="${i}" aria-pressed="${state.scenario === i}">${sc.name}</button>`).join('');
+    box.querySelectorAll('[data-i]').forEach(b => b.addEventListener('click', () => loadScenario(+b.dataset.i)));
+    document.getElementById('scenText').textContent = state.scenario >= 0
+      ? SCENARIOS[state.scenario].text
+      : 'Cambiaste la confianza en alguna fuente. Elegí una etapa para volver a los valores originales.';
+  }
+
+  function loadScenario(i) {
+    const sc = SCENARIOS[i];
+    state.scenario = i; state.stage = sc.stage; state.priors = {}; state.selected = sc.sel;
+    render();
+  }
+
+  function render() {
+    view(); computeCredibility();
+    const ranking = rank();
+    const fits = Object.fromEntries(ranking.map(r => [r.h, r.fit]));
+    const statuses = Object.fromEntries(Object.keys(NODES).filter(k => NODES[k].kind === 'P').map(k => [k, predictionStatus(k)]));
+    renderHeader(); renderScenarios(); renderGraph(fits, statuses); renderRoH(ranking); renderNode(ranking, statuses); renderSources(); renderConflicts();
+  }
+
+  window.__episteme = { CASES, state, useCase, view, computeCredibility, rank, cred };
+  useCase('semmelweis');
+  loadScenario(0);
+})();
+</script>
