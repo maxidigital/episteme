@@ -2,7 +2,7 @@
 
 Núcleo de "Inteligencia Natural": un sistema para discutir con argumentos. Toda afirmación es debatible, incluidas las fuentes; la credibilidad de cada cosa sale de su propio debate, y las hipótesis se juzgan por sus predicciones.
 
-Java 21, sin dependencias de runtime. JUnit 5 para tests.
+Java 17, sin dependencias de runtime. JUnit 5 para tests.
 
 ```
 mvn test

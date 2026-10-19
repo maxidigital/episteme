@@ -19,12 +19,11 @@ public final class KnowledgeGraph {
     KnowledgeGraph() {}
 
     void apply(Event event) {
-        switch (event) {
-            case Event.NodeAdded(Node n) -> addNode(n);
-            case Event.SourceAdded(Source s) -> addSource(s);
-            case Event.RelationAdded(Relation r) -> addRelation(r);
-            case Event.SourcePriorSet(NodeId id, double p, String reason) -> setPrior(id, p);
-        }
+        if (event instanceof Event.NodeAdded e) addNode(e.node());
+        else if (event instanceof Event.SourceAdded e) addSource(e.source());
+        else if (event instanceof Event.RelationAdded e) addRelation(e.relation());
+        else if (event instanceof Event.SourcePriorSet e) setPrior(e.source(), e.prior());
+        else throw new IllegalStateException("Evento desconocido: " + event);
     }
 
     private void addNode(Node n) {

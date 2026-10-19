@@ -40,7 +40,7 @@ class SemmelweisCaseTest {
 
     @Test
     void cadavericHypothesisLeadsAndLeavesHandwashingToTest() {
-        HypothesisRanker.Report top = rankAt(stages.kolletschka()).getFirst();
+        HypothesisRanker.Report top = rankAt(stages.kolletschka()).get(0);
         assertEquals("H5", top.hypothesis().value());
         assertEquals(0.0, top.refutation(), 1e-9);
         assertEquals(List.of(id("P9")), top.predictionsWith(Verdict.PENDING));
@@ -48,8 +48,8 @@ class SemmelweisCaseTest {
 
     @Test
     void handwashingConfirmsThePendingPrediction() {
-        double before = rankAt(stages.kolletschka()).getFirst().fit();
-        HypothesisRanker.Report after = rankAt(stages.handwashing()).getFirst();
+        double before = rankAt(stages.kolletschka()).get(0).fit();
+        HypothesisRanker.Report after = rankAt(stages.handwashing()).get(0);
         assertEquals("H5", after.hypothesis().value());
         assertTrue(after.fit() > before);
         assertTrue(after.predictionsWith(Verdict.PENDING).isEmpty());
@@ -59,9 +59,9 @@ class SemmelweisCaseTest {
     void methodologicalObjectionWeakensTheInterventionButNotTheHypothesisRanking() {
         Credibility before = new Credibility(at(stages.handwashing())), after = new Credibility(at(stages.objection()));
         assertTrue(after.p(id("S6")) < before.p(id("S6")));
-        HypothesisRanker.Report top = rankAt(stages.objection()).getFirst();
+        HypothesisRanker.Report top = rankAt(stages.objection()).get(0);
         assertEquals("H5", top.hypothesis().value());
-        assertTrue(top.fit() < rankAt(stages.handwashing()).getFirst().fit());
+        assertTrue(top.fit() < rankAt(stages.handwashing()).get(0).fit());
     }
 
     @Test
