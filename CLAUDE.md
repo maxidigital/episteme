@@ -24,11 +24,12 @@ Maxi trabaja en paralelo con Claude (chat) y con Claude Code, y la planilla es e
 3. **No existe el 0 ni el 1.** Todo valor está en el intervalo abierto (0, 1), tiende a 0 pero nunca llega (regla de Cromwell). Implementado en log-odds.
 4. **Nada se borra.** Todo es un evento; las versiones y la historia salen del log.
 5. **Los valores de estructuras e hipótesis no se ponen a mano: se derivan.** Lo único que se ingresa es la confianza de base de cada fuente.
-6. **Las hipótesis se juzgan por sus predicciones**, que se cumplen o fallan según la evidencia. Las relaciones de predicción no llevan peso.
-7. **Las copias no suman:** fuentes que derivan de la misma raíz cuentan como una.
-8. La "vida propia" del documento = un proceso que sigue corriendo y propagando cambios, como un thread. No es una metáfora biológica.
+6. **Las copias no suman:** fuentes que derivan de la misma raíz cuentan como una.
+7. La "vida propia" del documento = un proceso que sigue corriendo y propagando cambios, como un thread. No es una metáfora biológica.
 
 Lo distribuido (red de nodos, bots, usuarios con árboles personales) es una idea a futuro, no está descartada pero no es el foco.
+
+**No es de Maxi, es de Claude:** juzgar hipótesis por predicciones y rankearlas. Está implementado (`HypothesisRanker`), pero Maxi lo considera sobreingeniería y lo dejó fuera de `IDEA.md`. No construir más sobre eso sin preguntarle.
 
 ## Estado actual
 
