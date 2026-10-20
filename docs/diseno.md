@@ -83,3 +83,19 @@ La fuerza de una estructura sale de **cuántos elementos independientes la forma
 Por defecto no importa cómo se encontró una estructura (anunciada antes de mirar o encontrada revisando los factos): "me da igual siempre y cuando tenga factos que lo soporten". (Maxi)
 
 Pero una estructura siempre se mide contra lo que daría el azar, que es parte del conocimiento de fondo: en 3000 relatos al azar caerían unos 14 en martes de luna llena, así que 40 es algo y 15 no es nada. Si alguien sospecha que la estructura salió de probar muchas combinaciones, eso entra como una duda con sus propios factos. Los factos que lleguen después la ponen a prueba. *(propuesta de Claude, aceptada)*
+
+## Nivel 2: hipótesis
+
+"Lo que debe explicar primero una hipótesis son elementos del nivel 1, los cuales ya tienen sus índices de credibilidad", y al final de cuentas lo que mueve su índice es la cantidad de factos con los que es congruente. (Maxi, charla original)
+
+Se evalúan por las estructuras que explican, las que dejan sin explicar y con cuáles entran en tensión. (Maxi, 20/10)
+
+### Hipótesis compuestas
+
+"¿Qué probabilidad hay de que esos dos eventos se den al mismo tiempo?" (Maxi)
+
+- Si las partes son hipótesis no comprobadas, la compuesta paga la conjunción: vale como mucho lo que vale su parte más débil.
+- Si las partes ya son factos (el cráter existe, las coladas de lava también), la coincidencia no cuesta nada porque pasó. Lo que la compuesta afirma de más es que las dos contribuyeron.
+- **Cada parte de una hipótesis compuesta tiene que explicar al menos una estructura que las otras no explican. Si no, sobra.**
+
+*(propuesta de Claude, aceptada)*
