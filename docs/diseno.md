@@ -6,6 +6,8 @@
 
 ## Método
 
+"Es importante entender que este es un sistema altamente dinámico, representa una foto de una investigación y no busca entregar verdades absolutas." (Maxi)
+
 "No quiero matematizar, primero debe ser comprendido profundamente, muy al final la matemática la va a expresar." (Maxi)
 
 "El sistema te entrega un valor y un árbol lógico, después cada uno decide." (Maxi)
@@ -33,8 +35,16 @@ Cada duda tiene un nivel de verosimilitud. Una duda sin sostén ("un dinosaurio 
 - Cien personas repitiendo la misma objeción son una sola duda.
 - Si un facto se apoya en varias observaciones independientes, una duda que derriba una de ellas le saca solo esa pata.
 
+### Un facto puesto en duda se abre como cluster
+
+Un facto puesto en duda puede convertirse en un cluster: el facto pasa a ser la hipótesis de un caso nuevo, con sus propios niveles 0, 1 y 2. (Maxi)
+
+El cluster se abre cuando la IA o los usuarios lo determinan. (Maxi) Abrirlo no es un permiso para dudar: una duda existe y pesa aunque nadie abra el cluster. Abrir es decidir dónde poner el zoom de la investigación.
+
+Dentro del cluster, "el facto es cierto" compite con las hipótesis que implican las dudas (por ejemplo, "no hubo aviones, los videos están trucados"), y cada una se juzga por lo que explica. *(propuesta de Claude, aceptada)*
+
 ### Grados
 
-F0-A prácticamente incontrovertible, F0-B establecido, F0-C debatido, F0-D polémico. "Definidos por el nivel de credibilidad, medido por cantidad de dudas vertidas sobre el facto multiplicadas por el índice de dudarazonabilidad." (Maxi)
+F0-A prácticamente incontrovertible, F0-B establecido, F0-C debatido, F0-D polémico. En la charla original: "definidos por el nivel de credibilidad, medido por cantidad de dudas vertidas sobre el facto multiplicadas por el índice de dudarazonabilidad". (Maxi)
 
-*En discusión.*
+Con los clusters, el grado describe cómo queda el facto frente a sus rivales: no depende solo de las dudas, sino también de cuánta evidencia lo sostiene. Un facto con un solo testimonio flojo y sin dudas no queda por encima de uno con diez fuentes independientes y una duda razonable. *(propuesta de Claude, aceptada)*
