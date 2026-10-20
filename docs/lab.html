@@ -294,7 +294,7 @@ svg g.node { cursor: pointer; outline: none; }
 
   const W = 4.0, NEUTRAL = 0.2, DAMPING = 0.5, TOL = 1e-10, MAX_IT = 1000, MAXL = 30, CREDIBLE = 0.5;
   const VERDICT = { CONFIRMED: 'se cumple', REFUTED: 'falla', CONTESTED: 'en disputa', PENDING: 'por probar' };
-  const KIND_LINE = { F: 'Facto · nivel 0', S: 'Estructura · nivel 1', P: 'Predicción · nivel 2', H: 'Hipótesis · nivel 2' };
+  const KIND_LINE = { O: 'Observación · nivel 0', F: 'Facto · nivel 0', S: 'Estructura · nivel 1', P: 'Predicción · nivel 2', H: 'Hipótesis · nivel 2' };
   const grade = p => p >= 0.9 ? 'A' : p >= 0.75 ? 'B' : p >= 0.5 ? 'C' : 'D';
   const clampL = l => Math.max(-MAXL, Math.min(MAXL, l));
   const logit = p => Math.log(p / (1 - p));
@@ -313,7 +313,8 @@ svg g.node { cursor: pointer; outline: none; }
   }
   const exists = id => id in NODES || id in SRC;
   const kindOf = id => id in SRC ? 'SRC' : NODES[id].kind;
-  const isEvidence = id => id in SRC || NODES[id].kind === 'F' || NODES[id].kind === 'S';
+  const EV_KINDS = ['O', 'F', 'S'];
+  const isEvidence = id => id in SRC || EV_KINDS.includes(NODES[id].kind);
   const rootOf = id => { let s = id; while (SRC[s].from) s = SRC[s].from; return s; };
   const out = id => RELS.filter(r => r.from === id);
   const inc = id => RELS.filter(r => r.to === id);
@@ -509,7 +510,7 @@ svg g.node { cursor: pointer; outline: none; }
     Object.entries(ALL).forEach(([id, n]) => {
       const fut = n.stage > state.stage;
       const g = el('g', { class: 'node', tabindex: 0, role: 'button', 'aria-label': `${id}: ${n.text}`, opacity: fut ? 0.3 : 1 }, svg);
-      const ev = !fut && (n.kind === 'F' || n.kind === 'S');
+      const ev = !fut && EV_KINDS.includes(n.kind);
       const p = ev ? cred(id) : null;
       const st = n.kind === 'P' && !fut ? statuses[id] : null;
       const weak = ev && p < CREDIBLE;
@@ -588,13 +589,13 @@ svg g.node { cursor: pointer; outline: none; }
     let body = '';
     if (fut) {
       body = '<p class="note">Todavía no existe en este momento del caso. Aparece en una etapa posterior.</p>';
-    } else if (n.kind === 'F' || n.kind === 'S') {
+    } else if (EV_KINDS.includes(n.kind)) {
       const p = cred(id);
       const ds = out(id).filter(r => r.type === 'DERIVED_FROM');
       const preds = inc(id).filter(r => r.type === 'CONFIRMED_BY' || r.type === 'REFUTED_BY');
       body = `
         <div class="label">Credibilidad <span class="mono">${fp(p)}</span> · grado ${grade(p)} · log-odds <span class="mono">${L[id] >= 0 ? '+' : '−'}${Math.abs(L[id]).toFixed(2)}</span></div>
-        <div class="note">${n.kind === 'F' ? 'Sale de sus fuentes y de lo que la apoya u objeta. Sin nada, una afirmación vale 0.2.' : 'Crece con cada elemento independiente que la forma; los que comparten raíz cuentan como uno. Más lo que la apoya u objeta.'}</div>
+        <div class="note">${n.kind !== 'S' ? 'Sale de sus fuentes y observaciones (cada pata independiente suma) y de lo que la apoya u objeta. Sin nada, una afirmación vale 0.2.' : 'Crece con cada elemento independiente que la forma; los que comparten raíz cuentan como uno. Más lo que la apoya u objeta.'}</div>
         ${ds.length ? `<div class="derivs">${ds.map(r => `<div class="cite"><span><span class="mono">${r.to}</span> ${NODES[r.to].short}</span><span class="mono">${fp(cred(r.to))}</span></div>`).join('')}</div>` : ''}
         ${clusterHtml(id)}
         ${n.kind === 'S' ? `<div class="readout">${preds.length ? preds.map(r => `${r.type === 'CONFIRMED_BY' ? 'Cumple' : 'Hace fallar'} ${r.from}`).join(' · ') : '<strong style="color:var(--warn)">Ninguna predicción la anticipa: ninguna hipótesis la explica.</strong>'}</div>` : ''}`;

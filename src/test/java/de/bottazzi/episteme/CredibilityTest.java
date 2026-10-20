@@ -120,6 +120,26 @@ class CredibilityTest {
         return b;
     }
 
+    /** D16: una duda contra una de las observaciones que sostienen un facto le saca solo esa pata. */
+    @Test
+    void doubtAgainstAnObservationRemovesOnlyThatLeg() {
+        CaseBuilder clean = twoWitnesses(), onObservation = twoWitnesses(), onFact = twoWitnesses();
+        onObservation.rel("D", UNDERMINES, "O1", 1.0);
+        onFact.rel("D", UNDERMINES, "F", 1.0);
+        double before = p(clean, "F");
+        assertTrue(p(onObservation, "F") < before);
+        assertTrue(p(onObservation, "F") > p(onFact, "F"), "la otra pata sigue en pie");
+        assertTrue(p(onObservation, "O1") < p(onObservation, "O2"));
+    }
+
+    private static CaseBuilder twoWitnesses() {
+        return new CaseBuilder().source("w1", "testigo 1").source("w2", "testigo 2").source("v", "video")
+                .observation("O1", "el testigo 1 vio el choque").cites("O1", "w1", 0.9)
+                .observation("O2", "el testigo 2 vio el choque").cites("O2", "w2", 0.9)
+                .fact("F", "hubo un choque").observedIn("F", "O1", "O2")
+                .fact("D", "el testigo 1 estaba de espaldas").cites("D", "v", 0.9);
+    }
+
     @Test
     void sourcesAreDebatableToo() {
         CaseBuilder b = new CaseBuilder().source("s", "Organismo").fact("F", "dato").cites("F", "s", 0.9);

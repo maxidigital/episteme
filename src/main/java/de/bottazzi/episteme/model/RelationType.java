@@ -8,7 +8,11 @@ package de.bottazzi.episteme.model;
  * por ejemplo "el termometro estaba mal calibrado" contra el dato de temperatura.
  */
 public enum RelationType {
-    /** from (estructura) se construyo a partir de to. */
+    /**
+     * from se construyo a partir de to: una estructura a partir de sus elementos, o un facto a partir de
+     * las observaciones que lo sostienen. Cada to es una pata; una duda contra una observacion le saca
+     * al facto solo esa pata.
+     */
     DERIVED_FROM,
     /** from se apoya en la fuente to. strength = calidad de esa cita. */
     SOURCED_FROM,

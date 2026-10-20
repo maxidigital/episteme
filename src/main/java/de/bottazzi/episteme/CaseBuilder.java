@@ -29,6 +29,8 @@ final class CaseBuilder {
 
     CaseBuilder fact(String id, String statement) { return add(new NodeAdded(Node.fact(id, statement))); }
 
+    CaseBuilder observation(String id, String statement) { return add(new NodeAdded(Node.observation(id, statement))); }
+
     CaseBuilder structure(String id, String statement) { return add(new NodeAdded(Node.structure(id, statement))); }
 
     CaseBuilder prediction(String id, String statement) { return add(new NodeAdded(Node.prediction(id, statement))); }
@@ -42,6 +44,9 @@ final class CaseBuilder {
         for (String f : from) rel(structure, DERIVED_FROM, f, 1.0);
         return this;
     }
+
+    /** El facto se sostiene en esas observaciones. */
+    CaseBuilder observedIn(String fact, String... observations) { return derive(fact, observations); }
 
     CaseBuilder predicts(String h, String... ps) {
         for (String p : ps) link(h, PREDICTS, p);
