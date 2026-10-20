@@ -60,3 +60,20 @@ Un mismo enunciado puede ser hipótesis dentro de su cluster y facto en un caso 
 F0-A prácticamente incontrovertible, F0-B establecido, F0-C debatido, F0-D polémico. En la charla original: "definidos por el nivel de credibilidad, medido por cantidad de dudas vertidas sobre el facto multiplicadas por el índice de dudarazonabilidad". (Maxi)
 
 Con los clusters, el grado describe cómo queda el facto frente a sus rivales: no depende solo de las dudas, sino también de cuánta evidencia lo sostiene. Un facto con un solo testimonio flojo y sin dudas no queda por encima de uno con diez fuentes independientes y una duda razonable. *(propuesta de Claude, aceptada)*
+
+### Tautologías base y conocimiento de fondo
+
+- **Tautologías base:** las reglas lógicas del sistema (2+2=4, algo no puede ser y no ser a la vez). "Quizás haya que definir un conjunto básico de tautologías base del sistema." (Maxi, charla original) Son lo único que no se discute dentro de un caso.
+- **Conocimiento de fondo:** factos de alto grado de la base compartida que "no chocan contra la realidad": la aceleración de la gravedad, cuándo se popularizó internet, las posibilidades técnicas de cada época. Se agregan al cluster como factos cuando sirven para armar elementos de nivel 1. (Maxi) Como todo facto, se pueden discutir. *(el nombre y la separación son propuesta de Claude, aceptada)*
+
+## Nivel 1: estructuras
+
+"Cuestiones muy básicas que nadie puede discutir, ni de un lado ni del otro del río Bravo", y desde ahí subir. (Maxi, charla original)
+
+El nivel 1 busca estructura entre los factos (patrones, convergencias, correspondencias, anomalías) sin decir todavía por qué existe.
+
+### Qué hace fuerte a una estructura
+
+"3000 casos juntos y en un período de tiempo tal constituyen una evidencia de alto nivel", aunque cada uno sea testimonial. (Maxi, charla original)
+
+La fuerza de una estructura sale de **cuántos elementos independientes la forman**, no de su elemento más débil. La independencia se argumenta con el conocimiento de fondo: ¿pudieron 3000 personas de 40 países en 50 años comunicarse y ponerse de acuerdo? ¿Existía la posibilidad técnica? (Maxi) Si hay una raíz común (todos los relatos aparecen después de una película que muestra lo mismo), son copias y cuentan como uno. *(formulación de Claude, aceptada)*
