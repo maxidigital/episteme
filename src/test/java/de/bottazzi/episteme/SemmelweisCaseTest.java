@@ -39,8 +39,8 @@ class SemmelweisCaseTest {
     @Test
     void allMortalityDataHasOneRoot() {
         KnowledgeGraph g = at(stages.early());
-        assertEquals(1, g.independentRoots(id("F1")).size());
-        assertEquals(2, at(stages.kolletschka()).independentRoots(id("F9")).size());
+        assertEquals(1, g.rootsOf(id("F1")).size());
+        assertEquals(2, at(stages.kolletschka()).rootsOf(id("F9")).size());
     }
 
     @Test

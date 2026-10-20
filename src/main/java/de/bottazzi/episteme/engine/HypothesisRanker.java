@@ -98,6 +98,6 @@ public final class HypothesisRanker {
 
         return new Report(h, coverage - refutation, coverage, weighted, total, refutation,
                 List.copyOf(explained), List.copyOf(unexplained), List.copyOf(predictions),
-                g.citedSources(h).size(), g.independentRoots(h).size());
+                g.citedSources(h).size(), (int) g.citedSources(h).stream().map(g::rootOf).distinct().count());
     }
 }

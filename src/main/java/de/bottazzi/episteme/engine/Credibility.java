@@ -12,13 +12,15 @@ import java.util.*;
  * <p>Todo se suma en log-odds, asi que p nunca llega a 0 ni a 1 (regla de Cromwell):
  * <pre>
  * base(fuente)      = logit(prior)
- * base(facto)       = logit(PRIOR_CLAIM)      + citas
- * base(observacion) = logit(PRIOR_OBSERVATION) + citas
- * base(estructura)  = logit(min sobre lo que la sostiene de p * fuerza) + citas
- * citas             = sum por raiz independiente de W * max(calidad * p(fuente))
+ * base(facto)       = logit(PRIOR_CLAIM)       + sosten
+ * base(observacion) = logit(PRIOR_OBSERVATION) + sosten
+ * base(estructura)  = logit(PRIOR_CLAIM)       + sosten
+ * sosten            = sum por raiz independiente de W * max(k * p) de sus patas
  * L(n)              = base(n) + sum apoyos W*k*p(x) - sum objeciones W*k*p(x) - sum contradicciones W*k*p(x)
  * </pre>
- * Tres diarios que copian el mismo comunicado aportan una sola cita (una raiz).
+ * Las patas de un nodo son las fuentes que cita (k = calidad de la cita) y los elementos de los que deriva.
+ * Patas que comparten una raiz son copias: de ellas cuenta solo la mejor. Tres diarios que copian el mismo
+ * comunicado aportan una sola cita; una estructura crece con cada elemento independiente que la forma.
  * Una afirmacion sin fuentes ni apoyos queda en PRIOR_CLAIM: poco creible, pero no cero.
  *
  * <p>Se itera con amortiguacion hasta que ningun valor cambia mas que {@link #TOLERANCE}.
@@ -36,13 +38,17 @@ public final class Credibility {
     private final KnowledgeGraph g;
     private final List<NodeId> evidence;
     private final Map<NodeId, Double> logit = new HashMap<>();
+    private final Map<NodeId, Set<NodeId>> roots = new HashMap<>();
     private final int iterations;
     private final boolean converged;
 
     public Credibility(KnowledgeGraph g) {
         this.g = g;
         this.evidence = g.nodes().stream().filter(n -> n.kind().isEvidence()).map(Node::id).toList();
-        for (NodeId id : evidence) logit.put(id, initial(id));
+        for (NodeId id : evidence) {
+            logit.put(id, initial(id));
+            roots.put(id, g.rootsOf(id));
+        }
 
         int it = 0;
         boolean done = false;
@@ -76,9 +82,8 @@ public final class Credibility {
         Node n = g.node(id);
         double base = switch (n.kind()) {
             case SOURCE -> LogOdds.logit(g.source(id).prior());
-            case FACT -> LogOdds.logit(PRIOR_CLAIM) + citations(id);
-            case OBSERVATION -> LogOdds.logit(PRIOR_OBSERVATION) + citations(id);
-            case STRUCTURE -> derived(id) + citations(id);
+            case FACT, STRUCTURE -> LogOdds.logit(PRIOR_CLAIM) + sustain(id);
+            case OBSERVATION -> LogOdds.logit(PRIOR_OBSERVATION) + sustain(id);
             case PREDICTION, HYPOTHESIS -> throw new IllegalStateException("No es evidencia: " + id);
         };
         double push = 0;
@@ -94,25 +99,33 @@ public final class Credibility {
         return base + push;
     }
 
-    private double citations(NodeId id) {
-        Map<NodeId, Double> bestPerRoot = new HashMap<>();
+    private double sustain(NodeId id) {
+        List<Leg> legs = new ArrayList<>();
         for (Relation r : g.outgoing(id)) {
-            if (r.type() != RelationType.SOURCED_FROM) continue;
-            double v = r.strength() * p(r.to());
-            bestPerRoot.merge(g.rootOf(r.to()), v, Math::max);
+            if (r.type() == RelationType.SOURCED_FROM || r.type() == RelationType.DERIVED_FROM)
+                legs.add(new Leg(roots.get(r.to()), r.strength() * p(r.to())));
         }
-        return W * bestPerRoot.values().stream().mapToDouble(Double::doubleValue).sum();
+        return W * independent(legs);
     }
 
-    /** Un patron es tan creible como su pata mas debil. Sin sosten: como una afirmacion suelta. */
-    private double derived(NodeId id) {
-        double min = Double.NaN;
-        for (Relation r : g.outgoing(id)) {
-            if (r.type() != RelationType.DERIVED_FROM) continue;
-            double v = r.strength() * p(r.to());
-            min = Double.isNaN(min) ? v : Math.min(min, v);
+    private record Leg(Set<NodeId> roots, double value) {}
+
+    /** Une las patas que comparten alguna raiz y suma la mejor de cada grupo. */
+    private static double independent(List<Leg> legs) {
+        List<Set<NodeId>> groups = new ArrayList<>();
+        List<Double> best = new ArrayList<>();
+        for (Leg leg : legs) {
+            Set<NodeId> rs = new HashSet<>(leg.roots());
+            double b = leg.value();
+            for (int i = groups.size() - 1; i >= 0; i--) {
+                if (Collections.disjoint(groups.get(i), rs)) continue;
+                rs.addAll(groups.remove(i));
+                b = Math.max(b, best.remove(i));
+            }
+            groups.add(rs);
+            best.add(b);
         }
-        return Double.isNaN(min) ? LogOdds.logit(PRIOR_CLAIM) : LogOdds.logit(min);
+        return best.stream().mapToDouble(Double::doubleValue).sum();
     }
 
     /** Credibilidad en (0, 1). */

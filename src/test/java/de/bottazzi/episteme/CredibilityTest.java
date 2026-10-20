@@ -120,10 +120,30 @@ class CredibilityTest {
     }
 
     @Test
-    void circularDerivationDoesNotSupportItself() {
-        CaseBuilder b = new CaseBuilder().structure("S1", "a").structure("S2", "b")
-                .rel("S1", DERIVED_FROM, "S2", 1.0).rel("S2", DERIVED_FROM, "S1", 1.0);
-        assertEquals(Credibility.PRIOR_CLAIM, p(b, "S1"), 1e-6);
+    void circularDerivationIsRejected() {
+        CaseBuilder b = new CaseBuilder().structure("S1", "a").structure("S2", "b").rel("S1", DERIVED_FROM, "S2", 1.0);
+        assertThrows(IllegalStateException.class, () -> b.rel("S2", DERIVED_FROM, "S1", 1.0));
+        assertTrue(p(b, "S1") < 0.5, "una estructura armada sobre algo vacio sigue siendo poco creible");
+    }
+
+    /** D20: una estructura crece con sus elementos independientes y no vale lo que su pata mas debil. */
+    @Test
+    void structureGrowsWithIndependentElements() {
+        CaseBuilder one = testimonies(1, false), three = testimonies(3, false), copies = testimonies(3, true);
+        assertTrue(p(three, "S") > p(one, "S"));
+        assertEquals(p(one, "S"), p(copies, "S"), 1e-9);
+        assertTrue(p(three, "S") > p(three, "T0"), "no queda por debajo de su elemento mas debil");
+    }
+
+    /** n relatos con una fuente cada uno; si copied, todas las fuentes derivan de la primera. */
+    private static CaseBuilder testimonies(int n, boolean copied) {
+        CaseBuilder b = new CaseBuilder().structure("S", "los relatos coinciden");
+        for (int i = 0; i < n; i++) {
+            if (copied && i > 0) b.copy("s" + i, "testigo " + i, "s0", 0.6);
+            else b.source("s" + i, "testigo " + i, 0.6);
+            b.fact("T" + i, "relato " + i).cites("T" + i, "s" + i, 0.8).derive("S", "T" + i);
+        }
+        return b;
     }
 
     @Test

@@ -193,7 +193,7 @@ svg g.node { cursor: pointer; outline: none; }
 
 <script>
 (() => {
-  // ---------- Casos (idénticos a IceCreamCase.java y SemmelweisCase.java) ----------
+  // ---------- Casos (idénticos a SemmelweisCase.java) ----------
   // stage: etapa en la que aparece el nodo, la fuente o la relación.
   const RID = (from, type, to) => `r-${from.toLowerCase()}-${type.toLowerCase()}-${to.toLowerCase()}`;
   const R = (stage, from, type, to, s = 1.0) => ({ id: RID(from, type, to), from, type, to, s, stage });
@@ -316,27 +316,43 @@ svg g.node { cursor: pointer; outline: none; }
   const inc = id => RELS.filter(r => r.to === id);
 
   // ---------- Credibilidad (espejo de engine/Credibility.java) ----------
+  const NO_SOURCE = '(sin fuente)';
+  // Raíces de las que sale un nodo: las de sus fuentes y las de los elementos de los que deriva.
+  const rootsOf = id => {
+    if (id in SRC) return [rootOf(id)];
+    const rs = new Set();
+    out(id).forEach(r => {
+      if (r.type === 'SOURCED_FROM') rs.add(rootOf(r.to));
+      if (r.type === 'DERIVED_FROM') rootsOf(r.to).forEach(x => rs.add(x));
+    });
+    return rs.size ? [...rs] : [NO_SOURCE];
+  };
+  // Une las patas que comparten alguna raíz y suma la mejor de cada grupo.
+  const independent = legs => {
+    const groups = [];
+    legs.forEach(([roots, v]) => {
+      let rs = new Set(roots), b = v;
+      for (let i = groups.length - 1; i >= 0; i--) {
+        if (![...groups[i].rs].some(x => rs.has(x))) continue;
+        groups[i].rs.forEach(x => rs.add(x)); b = Math.max(b, groups[i].b); groups.splice(i, 1);
+      }
+      groups.push({ rs, b });
+    });
+    return groups.reduce((a, g) => a + g.b, 0);
+  };
   let L = {}, ITER = 0, CONVERGED = false;
   function computeCredibility() {
     const ev = [...Object.keys(SRC), ...Object.keys(NODES).filter(isEvidence)];
+    const roots = Object.fromEntries(ev.map(id => [id, rootsOf(id)]));
     L = {};
     ev.forEach(id => L[id] = kindOf(id) === 'SRC' ? logit(priorOf(id)) : logit(PRIOR_CLAIM));
     const p = id => sig(L[id]);
-    const citations = id => {
-      const best = {};
-      out(id).filter(r => r.type === 'SOURCED_FROM').forEach(r => {
-        const v = r.s * p(r.to), root = rootOf(r.to);
-        best[root] = Math.max(best[root] ?? -Infinity, v);
-      });
-      return W * Object.values(best).reduce((a, b) => a + b, 0);
-    };
-    const derived = id => {
-      const ds = out(id).filter(r => r.type === 'DERIVED_FROM').map(r => r.s * p(r.to));
-      return ds.length ? logit(Math.min(...ds)) : logit(PRIOR_CLAIM);
-    };
+    const sustain = id => W * independent(out(id)
+      .filter(r => r.type === 'SOURCED_FROM' || r.type === 'DERIVED_FROM')
+      .map(r => [roots[r.to], r.s * p(r.to)]));
     const target = id => {
       const k = kindOf(id);
-      let base = k === 'SRC' ? logit(priorOf(id)) : k === 'F' ? logit(PRIOR_CLAIM) + citations(id) : derived(id) + citations(id);
+      let base = k === 'SRC' ? logit(priorOf(id)) : logit(PRIOR_CLAIM) + sustain(id);
       let push = 0;
       inc(id).forEach(r => {
         if (r.type === 'SUPPORTS') push += W * r.s * p(r.from);
@@ -576,7 +592,7 @@ svg g.node { cursor: pointer; outline: none; }
       const preds = inc(id).filter(r => r.type === 'CONFIRMED_BY' || r.type === 'REFUTED_BY');
       body = `
         <div class="label">Credibilidad <span class="mono">${fp(p)}</span> · grado ${grade(p)} · log-odds <span class="mono">${L[id] >= 0 ? '+' : '−'}${Math.abs(L[id]).toFixed(2)}</span></div>
-        <div class="note">${n.kind === 'F' ? 'Sale de sus fuentes y de lo que la apoya u objeta. Sin nada, una afirmación vale 0.2.' : 'La de su pata más débil, más lo que la apoya u objeta.'}</div>
+        <div class="note">${n.kind === 'F' ? 'Sale de sus fuentes y de lo que la apoya u objeta. Sin nada, una afirmación vale 0.2.' : 'Crece con cada elemento independiente que la forma; los que comparten raíz cuentan como uno. Más lo que la apoya u objeta.'}</div>
         ${ds.length ? `<div class="derivs">${ds.map(r => `<div class="cite"><span><span class="mono">${r.to}</span> ${NODES[r.to].short}</span><span class="mono">${fp(cred(r.to))}</span></div>`).join('')}</div>` : ''}
         ${clusterHtml(id)}
         ${n.kind === 'S' ? `<div class="readout">${preds.length ? preds.map(r => `${r.type === 'CONFIRMED_BY' ? 'Cumple' : 'Hace fallar'} ${r.from}`).join(' · ') : '<strong style="color:var(--warn)">Ninguna predicción la anticipa: ninguna hipótesis la explica.</strong>'}</div>` : ''}`;
@@ -666,7 +682,21 @@ svg g.node { cursor: pointer; outline: none; }
     renderHeader(); renderScenarios(); renderGraph(fits, statuses); renderRoH(ranking); renderNode(ranking, statuses); renderSources(); renderConflicts();
   }
 
-  window.__episteme = { CASES, state, useCase, view, computeCredibility, rank, cred };
+  // Mismos números y formato que LabParity.java (ver tools/lab-parity.mjs).
+  function parity() {
+    const lines = [];
+    Object.keys(CASES).forEach(caseId => {
+      useCase(caseId);
+      [...new Set(SCENARIOS.map(sc => sc.stage))].forEach(stage => {
+        state.stage = stage; state.priors = {}; view(); computeCredibility();
+        [...Object.keys(SRC), ...Object.keys(NODES).filter(isEvidence)]
+          .forEach(id => lines.push(`${caseId} ${stage} ${id} ${cred(id).toFixed(6)}`));
+      });
+    });
+    return lines;
+  }
+
+  window.__episteme = { CASES, state, useCase, view, computeCredibility, rank, cred, parity };
   useCase('semmelweis');
   loadScenario(0);
 })();

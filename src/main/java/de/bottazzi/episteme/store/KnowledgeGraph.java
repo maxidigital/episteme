@@ -54,8 +54,9 @@ public final class KnowledgeGraph {
         if (r.type().isUnweighted() && r.strength() != 1.0)
             throw new IllegalStateException("Las relaciones de prediccion no llevan peso: " + r.id());
         String problem = switch (r.type()) {
-            case DERIVED_FROM -> from == NodeKind.STRUCTURE && to.isEvidence() && to != NodeKind.SOURCE
-                    ? null : "DERIVED_FROM va de una estructura a factos, observaciones u otras estructuras";
+            case DERIVED_FROM -> from != NodeKind.STRUCTURE || !to.isEvidence() || to == NodeKind.SOURCE
+                    ? "DERIVED_FROM va de una estructura a factos, observaciones u otras estructuras"
+                    : derives(r.to(), r.from()) ? "Una estructura no puede derivar de si misma" : null;
             case SOURCED_FROM -> to == NodeKind.SOURCE && from != NodeKind.SOURCE && from != NodeKind.PREDICTION
                     ? null : "SOURCED_FROM va de una afirmacion a una fuente";
             case SUPPORTS, UNDERMINES -> from.isEvidence() && to.isEvidence()
@@ -72,6 +73,14 @@ public final class KnowledgeGraph {
         relations.put(r.id(), r);
         outgoing.computeIfAbsent(r.from(), k -> new ArrayList<>()).add(r);
         incoming.computeIfAbsent(r.to(), k -> new ArrayList<>()).add(r);
+    }
+
+    /** Si from llega a to siguiendo DERIVED_FROM. */
+    private boolean derives(NodeId from, NodeId to) {
+        if (from.equals(to)) return true;
+        for (Relation r : outgoing.getOrDefault(from, List.of()))
+            if (r.type() == RelationType.DERIVED_FROM && derives(r.to(), to)) return true;
+        return false;
     }
 
     private Node requireNode(NodeId id) {
@@ -114,10 +123,21 @@ public final class KnowledgeGraph {
         return outgoing(id).stream().filter(r -> r.type() == RelationType.SOURCED_FROM).map(Relation::to).toList();
     }
 
-    /** Raices independientes entre las fuentes citadas por un nodo. */
-    public Set<NodeId> independentRoots(NodeId id) {
+    /** Raiz comun de todo lo que no se apoya en ninguna fuente: cien afirmaciones sin fuente cuentan como una. */
+    public static final NodeId NO_SOURCE = NodeId.of("(sin fuente)");
+
+    /**
+     * Raices independientes de las que sale un nodo: las de las fuentes que cita y las de los elementos de
+     * los que deriva. Lo que no sale de ninguna fuente tiene la raiz {@link #NO_SOURCE}.
+     */
+    public Set<NodeId> rootsOf(NodeId id) {
+        if (requireNode(id).kind() == NodeKind.SOURCE) return Set.of(rootOf(id));
         Set<NodeId> roots = new LinkedHashSet<>();
-        for (NodeId s : citedSources(id)) roots.add(rootOf(s));
+        for (Relation r : outgoing(id)) {
+            if (r.type() == RelationType.SOURCED_FROM) roots.add(rootOf(r.to()));
+            if (r.type() == RelationType.DERIVED_FROM) roots.addAll(rootsOf(r.to()));
+        }
+        if (roots.isEmpty()) roots.add(NO_SOURCE);
         return roots;
     }
 }
