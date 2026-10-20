@@ -46,24 +46,25 @@ public final class KnowledgeGraph {
         NodeKind to = requireNode(r.to()).kind();
         if (r.aspect() != null && (to != NodeKind.SOURCE || (r.type() != RelationType.SUPPORTS && r.type() != RelationType.UNDERMINES)))
             throw new IllegalStateException("Sinceridad, competencia e independencia son apoyos u objeciones a una fuente: " + r.id());
-        if (r.type().isUnweighted() && r.strength() != 1.0)
-            throw new IllegalStateException("Las relaciones de prediccion no llevan peso: " + r.id());
+        if (r.type().isExplanatory() && r.strength() != 1.0)
+            throw new IllegalStateException("Explicar, dejar sin explicar o tensionar no lleva peso: " + r.id());
+        if (r.type().isExplanatory() && outgoing.getOrDefault(r.from(), List.of()).stream()
+                .anyMatch(x -> x.type().isExplanatory() && x.to().equals(r.to())))
+            throw new IllegalStateException("La hipotesis ya tiene una relacion con esa estructura: " + r.id());
         String problem = switch (r.type()) {
             case DERIVED_FROM -> !derivable(from, to)
                     ? "DERIVED_FROM va de una estructura a sus elementos, de un facto a sus observaciones o de una deduccion a sus premisas"
                     : derives(r.to(), r.from()) ? "Nada puede derivar de si mismo" : null;
-            case SOURCED_FROM -> to == NodeKind.SOURCE && from != NodeKind.SOURCE && from != NodeKind.PREDICTION
+            case SOURCED_FROM -> to == NodeKind.SOURCE && from.isEvidence() && from != NodeKind.SOURCE
                     && from != NodeKind.DEDUCTION
                     ? null : "SOURCED_FROM va de una afirmacion a una fuente (una deduccion sale solo de sus premisas)";
             case SUPPORTS, UNDERMINES -> from.isEvidence() && to.isEvidence()
-                    ? null : r.type() + " es entre evidencias (las hipotesis se juzgan por sus predicciones)";
+                    ? null : r.type() + " es entre evidencias (las hipotesis se juzgan por las estructuras que explican)";
             case CONTRADICTS, TENSION -> (from.isEvidence() && to.isEvidence())
                     || (from == NodeKind.HYPOTHESIS && to == NodeKind.HYPOTHESIS)
-                    ? null : "Una hipotesis choca con evidencia a traves de una prediccion que falla";
-            case PREDICTS -> from == NodeKind.HYPOTHESIS && to == NodeKind.PREDICTION
-                    ? null : "PREDICTS va de hipotesis a prediccion";
-            case CONFIRMED_BY, REFUTED_BY -> from == NodeKind.PREDICTION && to.isEvidence() && to != NodeKind.SOURCE
-                    ? null : r.type() + " va de una prediccion a evidencia";
+                    ? null : "Una hipotesis choca con evidencia entrando en tension con una estructura";
+            case EXPLAINS, LEAVES_UNEXPLAINED, IN_TENSION_WITH -> from == NodeKind.HYPOTHESIS && to == NodeKind.STRUCTURE
+                    ? null : r.type() + " va de una hipotesis a una estructura";
         };
         if (problem != null) throw new IllegalStateException(problem + ": " + r.id());
         relations.put(r.id(), r);

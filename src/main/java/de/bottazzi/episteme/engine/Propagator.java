@@ -17,8 +17,7 @@ import java.util.*;
  * <p>Direcciones (quien se ve afectado cuando cambia n):
  * <ul>
  *   <li>DERIVED_FROM x->n, SOURCED_FROM x->n: x depende de n, se revisa x.</li>
- *   <li>CONFIRMED_BY / REFUTED_BY p->n: la prediccion p que depende de n se revisa.</li>
- *   <li>PREDICTS h->p: la hipotesis h que hace la prediccion p se revisa.</li>
+ *   <li>EXPLAINS, LEAVES_UNEXPLAINED, IN_TENSION_WITH h->n: la hipotesis h se revisa.</li>
  *   <li>SUPPORTS n->y, UNDERMINES n->y: lo apoyado o atacado por n se revisa.</li>
  *   <li>CONTRADICTS, TENSION: en ambas direcciones.</li>
  * </ul>
@@ -69,14 +68,14 @@ public final class Propagator {
         List<Relation> out = new ArrayList<>();
         for (Relation r : g.incoming(n)) {
             switch (r.type()) {
-                case DERIVED_FROM, SOURCED_FROM, PREDICTS, CONFIRMED_BY, REFUTED_BY, CONTRADICTS, TENSION -> out.add(r);
+                case DERIVED_FROM, SOURCED_FROM, EXPLAINS, LEAVES_UNEXPLAINED, IN_TENSION_WITH, CONTRADICTS, TENSION -> out.add(r);
                 case SUPPORTS, UNDERMINES -> { }
             }
         }
         for (Relation r : g.outgoing(n)) {
             switch (r.type()) {
                 case SUPPORTS, UNDERMINES, CONTRADICTS, TENSION -> out.add(r);
-                case DERIVED_FROM, SOURCED_FROM, PREDICTS, CONFIRMED_BY, REFUTED_BY -> { }
+                case DERIVED_FROM, SOURCED_FROM, EXPLAINS, LEAVES_UNEXPLAINED, IN_TENSION_WITH -> { }
             }
         }
         return out;

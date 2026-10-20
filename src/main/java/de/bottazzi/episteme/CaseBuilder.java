@@ -39,7 +39,6 @@ final class CaseBuilder {
 
     CaseBuilder structure(String id, String statement) { return add(new NodeAdded(Node.structure(id, statement))); }
 
-    CaseBuilder prediction(String id, String statement) { return add(new NodeAdded(Node.prediction(id, statement))); }
 
     CaseBuilder hypothesis(String id, String statement) { return add(new NodeAdded(Node.hypothesis(id, statement))); }
 
@@ -54,14 +53,16 @@ final class CaseBuilder {
     /** El facto se sostiene en esas observaciones. */
     CaseBuilder observedIn(String fact, String... observations) { return derive(fact, observations); }
 
-    CaseBuilder predicts(String h, String... ps) {
-        for (String p : ps) link(h, PREDICTS, p);
+    CaseBuilder explains(String h, String... structures) { return links(h, EXPLAINS, structures); }
+
+    CaseBuilder leavesUnexplained(String h, String... structures) { return links(h, LEAVES_UNEXPLAINED, structures); }
+
+    CaseBuilder inTensionWith(String h, String... structures) { return links(h, IN_TENSION_WITH, structures); }
+
+    private CaseBuilder links(String from, RelationType type, String... to) {
+        for (String t : to) link(from, type, t);
         return this;
     }
-
-    CaseBuilder confirmedBy(String p, String e) { return link(p, CONFIRMED_BY, e); }
-
-    CaseBuilder refutedBy(String p, String e) { return link(p, REFUTED_BY, e); }
 
     CaseBuilder rel(String from, RelationType type, String to, double strength) {
         return add(new RelationAdded(Relation.of(id(from, type, to), from, type, to, strength)));

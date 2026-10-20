@@ -19,7 +19,5 @@ public record Node(NodeId id, NodeKind kind, String statement) {
 
     public static Node structure(String id, String statement) { return new Node(NodeId.of(id), NodeKind.STRUCTURE, statement); }
 
-    public static Node prediction(String id, String statement) { return new Node(NodeId.of(id), NodeKind.PREDICTION, statement); }
-
     public static Node hypothesis(String id, String statement) { return new Node(NodeId.of(id), NodeKind.HYPOTHESIS, statement); }
 }

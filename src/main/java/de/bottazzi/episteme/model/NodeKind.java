@@ -15,9 +15,7 @@ public enum NodeKind {
     DEDUCTION(0),
     /** Nivel 1: patron entre factos. No causal. */
     STRUCTURE(1),
-    /** Nivel 2: algo que deberia observarse si una hipotesis fuera cierta. */
-    PREDICTION(2),
-    /** Nivel 2: hipotesis. Se evalua solo por sus predicciones. */
+    /** Nivel 2: hipotesis. Se evalua por las estructuras que explica, deja sin explicar o tensiona. */
     HYPOTHESIS(2);
 
     private final int level;

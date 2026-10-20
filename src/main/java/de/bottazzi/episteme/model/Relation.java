@@ -26,7 +26,7 @@ public record Relation(RelationId id, NodeId from, NodeId to, RelationType type,
         return new Relation(RelationId.of(id), NodeId.of(from), NodeId.of(source), type, strength, Objects.requireNonNull(aspect, "aspect"));
     }
 
-    /** Relacion sin peso propio (predicciones). */
+    /** Relacion sin peso propio (de una hipotesis con una estructura). */
     public static Relation link(String id, String from, RelationType type, String to) {
         return new Relation(RelationId.of(id), NodeId.of(from), NodeId.of(to), type, 1.0, null);
     }

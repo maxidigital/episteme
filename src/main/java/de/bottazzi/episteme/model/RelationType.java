@@ -9,9 +9,9 @@ package de.bottazzi.episteme.model;
  */
 public enum RelationType {
     /**
-     * from se construyo a partir de to: una estructura a partir de sus elementos, o un facto a partir de
-     * las observaciones que lo sostienen. Cada to es una pata; una duda contra una observacion le saca
-     * al facto solo esa pata.
+     * from se construyo a partir de to: una estructura a partir de sus elementos, un facto a partir de
+     * las observaciones que lo sostienen, o una deduccion a partir de sus premisas. En una estructura o un
+     * facto cada to es una pata; una duda contra una observacion le saca al facto solo esa pata.
      */
     DERIVED_FROM,
     /** from se apoya en la fuente to. strength = calidad de esa cita. */
@@ -24,15 +24,15 @@ public enum RelationType {
     CONTRADICTS,
     /** Friccion entre from y to sin contradiccion logica. Igual que CONTRADICTS a efectos de calculo. */
     TENSION,
-    /** from (hipotesis) predice to (prediccion). */
-    PREDICTS,
-    /** from (prediccion) se cumple segun to (evidencia). */
-    CONFIRMED_BY,
-    /** from (prediccion) falla segun to (evidencia). */
-    REFUTED_BY;
+    /** from (hipotesis) explica to (estructura). */
+    EXPLAINS,
+    /** from (hipotesis) deja sin explicar a to (estructura): queda registrado, no mueve el indice. */
+    LEAVES_UNEXPLAINED,
+    /** from (hipotesis) entra en tension con to (estructura). */
+    IN_TENSION_WITH;
 
     public boolean isSymmetric() { return this == CONTRADICTS || this == TENSION; }
 
-    /** Relacion sin peso propio: su fuerza es siempre 1 y el peso sale de la evidencia. */
-    public boolean isUnweighted() { return this == PREDICTS || this == CONFIRMED_BY || this == REFUTED_BY; }
+    /** Relacion de una hipotesis con una estructura. No lleva peso: el peso es la credibilidad de la estructura. */
+    public boolean isExplanatory() { return this == EXPLAINS || this == LEAVES_UNEXPLAINED || this == IN_TENSION_WITH; }
 }

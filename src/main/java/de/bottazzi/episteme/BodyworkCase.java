@@ -9,10 +9,10 @@ import static de.bottazzi.episteme.model.RelationType.*;
  * Tomado de la planilla "Bodywork · Piloto esquema epistemologico" (nodos O01-O09, S01-S05, H01-H06)
  * mas las respuestas de Maxi del 19/10 (liberacion rapida y lenta, recuperacion del uso, mensaje de voz).
  *
- * <p>Las predicciones las propuso Claude y Maxi las acepto al responder; H07 y H08 son de Maxi;
- * H06 y H09 son rivales propuestas por Claude para que H04 y H08 compitan con algo.
- * Correccion de Maxi (19/10): la fascia tambien cede dentro de una sesion. La prediccion
- * "la fascia no deberia ceder de golpe" la habia escrito Claude y era incorrecta; se saco.
+ * <p>Las relaciones "explica / deja sin explicar / tensiona" salen de las predicciones que Claude propuso y
+ * Maxi acepto al responder, pasadas a estructuras (20/10): cada prediccion que se cumplia con una estructura
+ * es ahora "explica" esa estructura. H07 y H08 son de Maxi; H06 y H09 son rivales propuestas por Claude para
+ * que H04 y H08 compitan con algo. Correccion de Maxi (19/10): la fascia tambien cede dentro de una sesion.
  * Sin nombres de clientes.
  */
 public final class BodyworkCase {
@@ -50,16 +50,10 @@ public final class BodyworkCase {
          .hypothesis("H05", "La dureza es contraccion neuromuscular sostenida (puntos gatillo, defensa), no fascia")
          .hypothesis("H06", "En los casos sin registro no hubo un cambio relevante para la persona");
 
-        b.prediction("P1", "Dureza y perdida de uso deberian coincidir en las mismas zonas")
-         .prediction("P5", "La dureza deberia poder ceder de golpe dentro de una sesion")
-         .prediction("P6", "Deberia haber desconexion tambien sin dureza")
-         .prediction("P7", "La carga emocional deberia aparecer junto con la dureza")
-         .prediction("P8", "Una medicion antes y despues deberia mostrar cambio aunque la persona no lo note")
-         .prediction("P9", "Personas cercanas deberian cambiar sin notarlo")
-         .prediction("P10", "Una medicion antes y despues no deberia mostrar cambio relevante");
-        b.predicts("H01", "P1").predicts("H02", "P5").predicts("H05", "P5")
-         .predicts("H03", "P1", "P6", "P7").predicts("H04", "P8", "P9").predicts("H06", "P10");
-        b.confirmedBy("P1", "S1").confirmedBy("P6", "S5").confirmedBy("P7", "S2").confirmedBy("P9", "S4");
+        b.explains("H01", "S1")
+         .explains("H03", "S1", "S2", "S5")
+         .explains("H04", "S4")
+         .leavesUnexplained("H06", "S4");
         b.rel("H02", CONTRADICTS, "H05", 0.5).rel("H04", CONTRADICTS, "H06", 1.0);
         long pilot = b.version();
 
@@ -67,8 +61,11 @@ public final class BodyworkCase {
         b.source("src-bailarina", "Lo que expreso una bailarina sobre su propio movimiento, y su review")
          .source("src-audio", "Mensaje de voz espontaneo de un paciente (dos sesiones)");
 
-        b.fact("F10", "En una sesion aflojan muchas cosas; en el caso mas extremo, una bailarina se movia distinto esa misma noche")
-         .cites("F10", "src-practica", 0.9).cites("F10", "src-bailarina", 0.85)
+        // Dos patas independientes: lo que vio Maxi y lo que dijo la bailarina. Dudar de una le saca solo esa.
+        b.observation("O10", "La bailarina dijo que esa misma noche se movia distinto, y lo escribio en su review")
+         .cites("O10", "src-bailarina", 0.85)
+         .fact("F10", "En una sesion aflojan muchas cosas; en el caso mas extremo, una bailarina se movia distinto esa misma noche")
+         .cites("F10", "src-practica", 0.9).observedIn("F10", "O10")
          .fact("F11", "Hay cambios que se ven a lo largo de semanas, entre 4 y 8").cites("F11", "src-practica", 0.8)
          .fact("F12", "Cuando una zona dura se ablanda, la persona recupera el uso (Maxi: siempre)").cites("F12", "src-practica", 0.85)
          .fact("F13", "Un paciente reporta que esta todo el dia sin cansarse, con una energia extra que antes no tenia").cites("F13", "src-audio", 0.9);
@@ -86,17 +83,14 @@ public final class BodyworkCase {
          .hypothesis("H08", "La energia extra es energia que la persona gastaba sosteniendo la tension")
          .hypothesis("H09", "La energia extra se explica por expectativa u otros cambios en la vida del paciente");
 
-        b.prediction("P2", "Al ablandarse una zona deberia volver el uso")
-         .prediction("P4", "Los cambios deberian llevar semanas, no aparecer de golpe")
-         .prediction("P11", "Los cambios visibles deberian aparecer entre 4 y 8 semanas")
-         .prediction("P12", "Medido semana a semana, el tono de las zonas liberadas deberia subir en ese plazo")
-         .prediction("P13", "Despues de liberar tension deberia aparecer mas energia")
-         .prediction("P14", "Deberia repetirse en otros pacientes, sin sugerirselo")
-         .prediction("P15", "Deberia aparecer tambien sin sesiones, o no repetirse en otros pacientes");
-        b.predicts("H01", "P2").predicts("H02", "P4").predicts("H07", "P11", "P12")
-         .predicts("H08", "P13", "P14").predicts("H09", "P15");
-        b.confirmedBy("P2", "S8").confirmedBy("P4", "S7").confirmedBy("P5", "S6")
-         .confirmedBy("P11", "S7").confirmedBy("P13", "S9").confirmedBy("P9", "S10");
+        b.explains("H01", "S8")
+         .explains("H02", "S6", "S7")
+         .explains("H05", "S6")
+         .explains("H04", "S10")
+         .leavesUnexplained("H06", "S10")
+         .explains("H07", "S7")
+         .explains("H08", "S9")
+         .explains("H09", "S9");
         b.rel("H08", CONTRADICTS, "H09", 0.6);
         long answers = b.version();
 

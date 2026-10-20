@@ -2,7 +2,6 @@ package de.bottazzi.episteme;
 
 import de.bottazzi.episteme.engine.Credibility;
 import de.bottazzi.episteme.model.*;
-import de.bottazzi.episteme.store.KnowledgeGraph;
 import org.junit.jupiter.api.Test;
 
 import static de.bottazzi.episteme.model.RelationType.*;
@@ -219,16 +218,16 @@ class CredibilityTest {
     @Test
     void invalidRelationsAreRejectedAndNotLogged() {
         CaseBuilder b = new CaseBuilder().source("s", "fuente").fact("F", "dato")
-                .hypothesis("H", "hipotesis").prediction("P", "prediccion").structure("S", "patron");
+                .hypothesis("H", "hipotesis").structure("S", "patron");
         long v = b.version();
-        KnowledgeGraph g = b.log.current();
-        assertThrows(IllegalStateException.class, () -> b.rel("H", PREDICTS, "P", 0.7));        // prediccion con peso
+        assertThrows(IllegalStateException.class, () -> b.rel("H", EXPLAINS, "S", 0.7));         // explicar no lleva peso
+        assertThrows(IllegalStateException.class, () -> b.explains("H", "F"));                  // se explican estructuras
         assertThrows(IllegalStateException.class, () -> b.rel("H", CONTRADICTS, "F", 1.0));     // hipotesis contra evidencia
         assertThrows(IllegalStateException.class, () -> b.rel("H", SUPPORTS, "F", 1.0));        // hipotesis como evidencia
-        assertThrows(IllegalStateException.class, () -> b.link("P", CONFIRMED_BY, "s"));        // una fuente no confirma
         assertThrows(IllegalStateException.class, () -> b.rel("F", DERIVED_FROM, "S", 1.0));    // un facto no deriva de un patron
         assertThrows(IllegalArgumentException.class, () -> Relation.of("r", "F", SUPPORTS, "S", 0.0));
         assertEquals(v, b.log.version());
-        assertNotNull(g);
+        b.explains("H", "S");
+        assertThrows(IllegalStateException.class, () -> b.inTensionWith("H", "S"));             // una relacion por par
     }
 }
