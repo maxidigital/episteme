@@ -90,6 +90,34 @@ class CredibilityTest {
                 .rel("ALT", CONTRADICTS, "OFICIAL", 1.0);
     }
 
+    /** D05, D16: apoyos y objeciones que salen de la misma raiz cuentan una sola vez. */
+    @Test
+    void repeatedObjectionsFromOneRootCountOnce() {
+        CaseBuilder one = objections(1, false), copies = objections(5, true), independent = objections(5, false);
+        assertEquals(p(one, "F"), p(copies, "F"), 1e-9);
+        assertTrue(p(independent, "F") < p(one, "F"));
+    }
+
+    @Test
+    void repeatedSupportFromOneRootCountsOnce() {
+        CaseBuilder b = new CaseBuilder().source("s", "fuente", 0.8).fact("F", "dato")
+                .fact("A1", "apoyo").cites("A1", "s", 0.9).rel("A1", SUPPORTS, "F", 1.0);
+        double once = p(b, "F");
+        b.copy("c", "copia", "s", 0.8).fact("A2", "el mismo apoyo, copiado").cites("A2", "c", 0.9).rel("A2", SUPPORTS, "F", 1.0);
+        assertEquals(once, p(b, "F"), 1e-9);
+    }
+
+    /** n objeciones contra F, cada una con su fuente; si copied, todas derivan de la primera. */
+    private static CaseBuilder objections(int n, boolean copied) {
+        CaseBuilder b = new CaseBuilder().source("s", "fuente", 0.9).fact("F", "dato").cites("F", "s", 0.9);
+        for (int i = 0; i < n; i++) {
+            if (copied && i > 0) b.copy("o" + i, "repite", "o0", 0.6);
+            else b.source("o" + i, "objetor " + i, 0.6);
+            b.fact("X" + i, "objecion " + i).cites("X" + i, "o" + i, 0.8).rel("X" + i, UNDERMINES, "F", 0.5);
+        }
+        return b;
+    }
+
     @Test
     void sourcesAreDebatableToo() {
         CaseBuilder b = new CaseBuilder().source("s", "Organismo", 0.9).fact("F", "dato").cites("F", "s", 0.9);

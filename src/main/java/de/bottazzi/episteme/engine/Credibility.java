@@ -16,11 +16,14 @@ import java.util.*;
  * base(observacion) = logit(PRIOR_OBSERVATION) + sosten
  * base(estructura)  = logit(PRIOR_CLAIM)       + sosten
  * sosten            = sum por raiz independiente de W * max(k * p) de sus patas
- * L(n)              = base(n) + sum apoyos W*k*p(x) - sum objeciones W*k*p(x) - sum contradicciones W*k*p(x)
+ * L(n)              = base(n) + W * apoyos - W * ataques
+ * apoyos, ataques   = sum por raiz independiente de max(k * p(x))
  * </pre>
+ * Los ataques son objeciones, contradicciones y tensiones.
  * Las patas de un nodo son las fuentes que cita (k = calidad de la cita) y los elementos de los que deriva.
  * Patas que comparten una raiz son copias: de ellas cuenta solo la mejor. Tres diarios que copian el mismo
- * comunicado aportan una sola cita; una estructura crece con cada elemento independiente que la forma.
+ * comunicado aportan una sola cita; una estructura crece con cada elemento independiente que la forma;
+ * cien personas repitiendo la misma objecion desde la misma raiz son una sola objecion.
  * Una afirmacion sin fuentes ni apoyos queda en PRIOR_CLAIM: poco creible, pero no cero.
  *
  * <p>Se itera con amortiguacion hasta que ningun valor cambia mas que {@link #TOLERANCE}.
@@ -86,29 +89,32 @@ public final class Credibility {
             case OBSERVATION -> LogOdds.logit(PRIOR_OBSERVATION) + sustain(id);
             case PREDICTION, HYPOTHESIS -> throw new IllegalStateException("No es evidencia: " + id);
         };
-        double push = 0;
+        List<Leg> pro = new ArrayList<>(), con = new ArrayList<>();
         for (Relation r : g.incoming(id)) {
             switch (r.type()) {
-                case SUPPORTS -> push += W * r.strength() * p(r.from());
-                case UNDERMINES, CONTRADICTS, TENSION -> push -= W * r.strength() * p(r.from());
+                case SUPPORTS -> pro.add(leg(r, r.from()));
+                case UNDERMINES, CONTRADICTS, TENSION -> con.add(leg(r, r.from()));
                 default -> { }
             }
         }
         for (Relation r : g.outgoing(id))
-            if (r.type().isSymmetric()) push -= W * r.strength() * p(r.to());
-        return base + push;
+            if (r.type().isSymmetric()) con.add(leg(r, r.to()));
+        return base + W * independent(pro) - W * independent(con);
     }
 
     private double sustain(NodeId id) {
         List<Leg> legs = new ArrayList<>();
         for (Relation r : g.outgoing(id)) {
             if (r.type() == RelationType.SOURCED_FROM || r.type() == RelationType.DERIVED_FROM)
-                legs.add(new Leg(roots.get(r.to()), r.strength() * p(r.to())));
+                legs.add(leg(r, r.to()));
         }
         return W * independent(legs);
     }
 
     private record Leg(Set<NodeId> roots, double value) {}
+
+    /** La pata que aporta el nodo other a traves de la relacion r. */
+    private Leg leg(Relation r, NodeId other) { return new Leg(roots.get(other), r.strength() * p(other)); }
 
     /** Une las patas que comparten alguna raiz y suma la mejor de cada grupo. */
     private static double independent(List<Leg> legs) {

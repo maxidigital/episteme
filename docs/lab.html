@@ -353,13 +353,13 @@ svg g.node { cursor: pointer; outline: none; }
     const target = id => {
       const k = kindOf(id);
       let base = k === 'SRC' ? logit(priorOf(id)) : logit(PRIOR_CLAIM) + sustain(id);
-      let push = 0;
+      const pro = [], con = [];
       inc(id).forEach(r => {
-        if (r.type === 'SUPPORTS') push += W * r.s * p(r.from);
-        else if (['UNDERMINES', 'CONTRADICTS', 'TENSION'].includes(r.type)) push -= W * r.s * p(r.from);
+        if (r.type === 'SUPPORTS') pro.push([roots[r.from], r.s * p(r.from)]);
+        else if (['UNDERMINES', 'CONTRADICTS', 'TENSION'].includes(r.type)) con.push([roots[r.from], r.s * p(r.from)]);
       });
-      out(id).forEach(r => { if (r.type === 'CONTRADICTS' || r.type === 'TENSION') push -= W * r.s * p(r.to); });
-      return base + push;
+      out(id).forEach(r => { if (r.type === 'CONTRADICTS' || r.type === 'TENSION') con.push([roots[r.to], r.s * p(r.to)]); });
+      return base + W * independent(pro) - W * independent(con);
     };
     let it = 0, done = false;
     while (it < MAX_IT && !done) {
