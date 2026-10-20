@@ -113,3 +113,27 @@ Se evalúan por las estructuras que explican, las que dejan sin explicar y con c
 *(lista de Claude, aceptada)*
 
 Alcance: "en principio el sistema no está pensado para analizar seres humanos; si en el futuro se desprende algo así, bienvenido". (Maxi) Por eso no se agrega por ahora un período de validez a cada elemento.
+
+## Qué cambia en el código
+
+Validado por Maxi el 20/10. La versión completa del documento está en Claude Docs ("Episteme · Diseño para validar"); este archivo es la copia en el repo.
+
+| Decisión | Main hoy | Cambio |
+| --- | --- | --- |
+| Fuerza de estructuras (D20) | Vale lo que su pata más débil | Crece con los elementos independientes |
+| Observadores (D18) | Cada fuente tiene un valor de partida puesto a mano | Valor neutral único; suben o bajan por argumentos |
+| Copias que no suman (D05, D16) | Solo se aplica a las citas | También a apoyos y dudas de la misma raíz |
+| Dudas contra observaciones (D16) | La objeción apunta al nodo entero | Puede apuntar a una observación que sostiene el facto |
+| Deducciones marcadas (D15) | No existen | Facto derivado de otros factos, marcado |
+| Hipótesis (20/10) | Se juzgan por predicciones | Explica, deja sin explicar o tensiona estructuras |
+| Hipótesis compuestas (D23) | Ganan por explicar más | Cada parte tiene que explicar algo propio |
+| Comparar contra el azar (D22) | No existe | Las estructuras se miden contra lo esperable por azar |
+| Clusters (D17) | No existen | Un facto puede abrirse como caso nuevo |
+
+Quedan valores a mano que no cubre ninguna decisión: la calidad de cada cita y la fuerza de cada relación.
+
+## Abierto
+
+- Vida propia: latidos, propagación diferencial, repaso diario. Falta decidir si el cambio tiene que tardar en recorrer el árbol y poder verse.
+- T09: dos fotos del mismo material pueden dar números distintos según si alguien abrió un cluster.
+- Fuera del núcleo por ahora: usuarios y UA, árboles múltiples, red distribuida.
