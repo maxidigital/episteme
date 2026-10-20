@@ -294,7 +294,7 @@ svg g.node { cursor: pointer; outline: none; }
 
   const W = 4.0, NEUTRAL = 0.2, DAMPING = 0.5, TOL = 1e-10, MAX_IT = 1000, MAXL = 30, CREDIBLE = 0.5;
   const VERDICT = { CONFIRMED: 'se cumple', REFUTED: 'falla', CONTESTED: 'en disputa', PENDING: 'por probar' };
-  const KIND_LINE = { O: 'Observación · nivel 0', F: 'Facto · nivel 0', S: 'Estructura · nivel 1', P: 'Predicción · nivel 2', H: 'Hipótesis · nivel 2' };
+  const KIND_LINE = { O: 'Observación · nivel 0', F: 'Facto · nivel 0', D: 'Deducción · nivel 0', S: 'Estructura · nivel 1', P: 'Predicción · nivel 2', H: 'Hipótesis · nivel 2' };
   const grade = p => p >= 0.9 ? 'A' : p >= 0.75 ? 'B' : p >= 0.5 ? 'C' : 'D';
   const clampL = l => Math.max(-MAXL, Math.min(MAXL, l));
   const logit = p => Math.log(p / (1 - p));
@@ -313,7 +313,7 @@ svg g.node { cursor: pointer; outline: none; }
   }
   const exists = id => id in NODES || id in SRC;
   const kindOf = id => id in SRC ? 'SRC' : NODES[id].kind;
-  const EV_KINDS = ['O', 'F', 'S'];
+  const EV_KINDS = ['O', 'F', 'D', 'S'];
   const isEvidence = id => id in SRC || EV_KINDS.includes(NODES[id].kind);
   const rootOf = id => { let s = id; while (SRC[s].from) s = SRC[s].from; return s; };
   const out = id => RELS.filter(r => r.from === id);
@@ -354,8 +354,13 @@ svg g.node { cursor: pointer; outline: none; }
     const sustain = id => W * independent(out(id)
       .filter(r => r.type === 'SOURCED_FROM' || r.type === 'DERIVED_FROM')
       .map(r => [roots[r.to], r.s * p(r.to)]));
+    // Una deducción no agrega contenido: vale lo que su premisa más débil.
+    const weakestPremise = id => {
+      const ds = out(id).filter(r => r.type === 'DERIVED_FROM').map(r => r.s * p(r.to));
+      return logit(ds.length ? Math.min(...ds) : NEUTRAL);
+    };
     const target = id => {
-      const base = logit(NEUTRAL) + sustain(id);
+      const base = kindOf(id) === 'D' ? weakestPremise(id) : logit(NEUTRAL) + sustain(id);
       const pro = [], con = [];
       inc(id).forEach(r => {
         if (r.type === 'SUPPORTS') pro.push([roots[r.from], r.s * p(r.from)]);

@@ -15,6 +15,8 @@ public record Node(NodeId id, NodeKind kind, String statement) {
 
     public static Node observation(String id, String statement) { return new Node(NodeId.of(id), NodeKind.OBSERVATION, statement); }
 
+    public static Node deduction(String id, String statement) { return new Node(NodeId.of(id), NodeKind.DEDUCTION, statement); }
+
     public static Node structure(String id, String statement) { return new Node(NodeId.of(id), NodeKind.STRUCTURE, statement); }
 
     public static Node prediction(String id, String statement) { return new Node(NodeId.of(id), NodeKind.PREDICTION, statement); }

@@ -6,8 +6,13 @@ public enum NodeKind {
     SOURCE(0),
     /** Nivel 0: registro de algo observado, sin fuente revisada. */
     OBSERVATION(0),
-    /** Nivel 0: afirmacion factual. Su credibilidad sale de sus fuentes, apoyos y objeciones. */
+    /** Nivel 0: afirmacion factual. Su credibilidad sale de sus fuentes, observaciones, apoyos y objeciones. */
     FACT(0),
+    /**
+     * Nivel 0: deduccion obvia a partir de otros factos (lo de las 9:03 paso antes que lo de las 9:59).
+     * No agrega contenido, cambia la representacion: vale lo que su premisa mas debil y no suma raices propias.
+     */
+    DEDUCTION(0),
     /** Nivel 1: patron entre factos. No causal. */
     STRUCTURE(1),
     /** Nivel 2: algo que deberia observarse si una hipotesis fuera cierta. */

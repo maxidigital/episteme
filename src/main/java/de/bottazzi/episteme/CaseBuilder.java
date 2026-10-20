@@ -31,6 +31,12 @@ final class CaseBuilder {
 
     CaseBuilder observation(String id, String statement) { return add(new NodeAdded(Node.observation(id, statement))); }
 
+    /** Deduccion obvia a partir de las premisas dadas. */
+    CaseBuilder deduction(String id, String statement, String... premises) {
+        add(new NodeAdded(Node.deduction(id, statement)));
+        return derive(id, premises);
+    }
+
     CaseBuilder structure(String id, String statement) { return add(new NodeAdded(Node.structure(id, statement))); }
 
     CaseBuilder prediction(String id, String statement) { return add(new NodeAdded(Node.prediction(id, statement))); }

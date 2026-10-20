@@ -14,6 +14,7 @@ import java.util.*;
  * <pre>
  * L(n)                    = logit(NEUTRAL) + W * sosten - W * ataques + W * apoyos
  * sosten, apoyos, ataques = sum por raiz independiente de max(k * p(x))
+ * L(deduccion)            = logit(min sobre sus premisas de k * p) - W * ataques + W * apoyos
  * </pre>
  * Los ataques son objeciones, contradicciones y tensiones.
  * Las patas de un nodo son las fuentes que cita (k = calidad de la cita) y los elementos de los que deriva.
@@ -73,7 +74,7 @@ public final class Credibility {
     }
 
     private double target(NodeId id) {
-        double base = LogOdds.logit(NEUTRAL) + sustain(id);
+        double base = g.node(id).kind() == NodeKind.DEDUCTION ? weakestPremise(id) : LogOdds.logit(NEUTRAL) + sustain(id);
         List<Leg> pro = new ArrayList<>(), con = new ArrayList<>();
         for (Relation r : g.incoming(id)) {
             switch (r.type()) {
@@ -94,6 +95,17 @@ public final class Credibility {
                 legs.add(leg(r, r.to()));
         }
         return W * independent(legs);
+    }
+
+    /** Una deduccion no agrega contenido: vale lo que su premisa mas debil. Sin premisas, lo neutral. */
+    private double weakestPremise(NodeId id) {
+        double min = Double.NaN;
+        for (Relation r : g.outgoing(id)) {
+            if (r.type() != RelationType.DERIVED_FROM) continue;
+            double v = r.strength() * p(r.to());
+            min = Double.isNaN(min) ? v : Math.min(min, v);
+        }
+        return LogOdds.logit(Double.isNaN(min) ? NEUTRAL : min);
     }
 
     private record Leg(Set<NodeId> roots, double value) {}

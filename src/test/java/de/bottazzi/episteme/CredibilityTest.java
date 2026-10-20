@@ -140,6 +140,21 @@ class CredibilityTest {
                 .fact("D", "el testigo 1 estaba de espaldas").cites("D", "v", 0.9);
     }
 
+    /** D15: una deduccion vale lo que su premisa mas debil y no le agrega raices a una estructura. */
+    @Test
+    void deductionAddsNoContent() {
+        CaseBuilder b = new CaseBuilder().source("a", "camara 1").source("c", "camara 2")
+                .fact("E1", "el primer evento fue a las 9:03").cites("E1", "a", 0.9)
+                .fact("E2", "el segundo evento fue a las 9:59").cites("E2", "a", 0.9).cites("E2", "c", 0.9)
+                .deduction("ANTES", "el primer evento ocurrio antes que el segundo", "E1", "E2")
+                .structure("S", "patron con los dos eventos").derive("S", "E1", "E2");
+        assertEquals(Math.min(p(b, "E1"), p(b, "E2")), p(b, "ANTES"), 1e-9);
+        double without = p(b, "S");
+        b.derive("S", "ANTES");
+        assertEquals(without, p(b, "S"), 1e-9);
+        assertThrows(IllegalStateException.class, () -> b.cites("ANTES", "a", 0.9));
+    }
+
     @Test
     void sourcesAreDebatableToo() {
         CaseBuilder b = new CaseBuilder().source("s", "Organismo").fact("F", "dato").cites("F", "s", 0.9);

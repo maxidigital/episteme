@@ -50,10 +50,11 @@ public final class KnowledgeGraph {
             throw new IllegalStateException("Las relaciones de prediccion no llevan peso: " + r.id());
         String problem = switch (r.type()) {
             case DERIVED_FROM -> !derivable(from, to)
-                    ? "DERIVED_FROM va de una estructura a factos, observaciones u otras estructuras, o de un facto a sus observaciones"
+                    ? "DERIVED_FROM va de una estructura a sus elementos, de un facto a sus observaciones o de una deduccion a sus premisas"
                     : derives(r.to(), r.from()) ? "Nada puede derivar de si mismo" : null;
             case SOURCED_FROM -> to == NodeKind.SOURCE && from != NodeKind.SOURCE && from != NodeKind.PREDICTION
-                    ? null : "SOURCED_FROM va de una afirmacion a una fuente";
+                    && from != NodeKind.DEDUCTION
+                    ? null : "SOURCED_FROM va de una afirmacion a una fuente (una deduccion sale solo de sus premisas)";
             case SUPPORTS, UNDERMINES -> from.isEvidence() && to.isEvidence()
                     ? null : r.type() + " es entre evidencias (las hipotesis se juzgan por sus predicciones)";
             case CONTRADICTS, TENSION -> (from.isEvidence() && to.isEvidence())
@@ -75,6 +76,7 @@ public final class KnowledgeGraph {
         return switch (from) {
             case STRUCTURE -> to.isEvidence() && to != NodeKind.SOURCE;
             case FACT -> to == NodeKind.OBSERVATION;
+            case DEDUCTION -> to == NodeKind.FACT || to == NodeKind.OBSERVATION || to == NodeKind.DEDUCTION;
             default -> false;
         };
     }
