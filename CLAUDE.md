@@ -15,7 +15,7 @@ Maxi trabaja en paralelo con Claude (chat) y con Claude Code, y la planilla es e
 - Al cerrar una discusión de diseño, agregá una fila por cada idea, decisión, conclusión, tensión o pregunta nueva. Si no podés escribir en la planilla, anotalas en `docs/decisiones.md` con el mismo formato (ID, Tipo, Contenido, Estado, Origen, Relacionado, Fecha, Dónde) para pasarlas después.
 - No borres filas. Si algo cambia, marcá la vieja como "reemplazada" y agregá una nueva que la cite en Relacionado.
 - Las filas con Origen "Maxi" solo las edita Maxi. Si proponés un cambio a una idea suya, agregalo como fila nueva con Origen "Claude".
-- Fuentes de verdad: la idea está en `IDEA.md` (escrito por Maxi), las decisiones en la planilla, la implementación en este repo. Si el código contradice la idea, se corrige el código.
+- Fuentes de verdad: la idea está en `IDEA.md` (escrito por Maxi), el diseño validado en `docs/diseno.md` (y su PDF, `docs/diseno.pdf`), las decisiones en la planilla, la implementación en este repo. Si el código contradice la idea, se corrige el código.
 
 ## Principios decididos por Maxi (no cambiar sin preguntarle)
 
