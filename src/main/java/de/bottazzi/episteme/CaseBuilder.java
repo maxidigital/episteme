@@ -59,6 +59,9 @@ final class CaseBuilder {
 
     CaseBuilder inTensionWith(String h, String... structures) { return links(h, IN_TENSION_WITH, structures); }
 
+    /** h es una hipotesis compuesta de las partes dadas. */
+    CaseBuilder composedOf(String h, String... parts) { return links(h, COMPOSED_OF, parts); }
+
     private CaseBuilder links(String from, RelationType type, String... to) {
         for (String t : to) link(from, type, t);
         return this;

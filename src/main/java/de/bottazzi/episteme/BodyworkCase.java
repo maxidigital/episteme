@@ -92,6 +92,13 @@ public final class BodyworkCase {
          .explains("H08", "S9")
          .explains("H09", "S9");
         b.rel("H08", CONTRADICTS, "H09", 0.6);
+
+        // Hipotesis compuestas, propuestas por Claude para mostrar D23. En H10 cada parte explica algo propio;
+        // en H11 las dos explican solo S9, asi que cada una sobra frente a la otra.
+        b.hypothesis("H10", "La dureza desconecta la zona, y las semanas son lo que tarda en retonificarse")
+         .composedOf("H10", "H01", "H07")
+         .hypothesis("H11", "La energia extra es en parte tension liberada y en parte expectativa")
+         .composedOf("H11", "H08", "H09");
         long answers = b.version();
 
         return new Stages(b.log, pilot, answers);

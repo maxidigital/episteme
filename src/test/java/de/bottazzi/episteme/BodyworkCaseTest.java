@@ -59,4 +59,14 @@ class BodyworkCaseTest {
         assertEquals(Credibility.NEUTRAL, h06.p(), 1e-9);
         assertEquals(2, h06.unexplained().size());
     }
+
+    /** D23: en H10 cada parte explica algo propio; en H11 las dos explican solo S9 y cada una sobra. */
+    @Test
+    void compositeHypothesesMarkPartsThatAddNothing() {
+        KnowledgeGraph g = stages.log().stateAt(stages.answers());
+        HypothesisIndex idx = new HypothesisIndex(g, new Credibility(g));
+        assertTrue(idx.of(id("H10")).redundantParts().isEmpty());
+        assertEquals(java.util.List.of(id("H08"), id("H09")), idx.of(id("H11")).redundantParts());
+        assertEquals(idx.of(id("H08")).logit(), idx.of(id("H11")).logit(), 1e-12);
+    }
 }

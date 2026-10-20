@@ -29,10 +29,15 @@ public enum RelationType {
     /** from (hipotesis) deja sin explicar a to (estructura): queda registrado, no mueve el indice. */
     LEAVES_UNEXPLAINED,
     /** from (hipotesis) entra en tension con to (estructura). */
-    IN_TENSION_WITH;
+    IN_TENSION_WITH,
+    /** from (hipotesis compuesta) tiene a to (hipotesis) como parte. */
+    COMPOSED_OF;
 
     public boolean isSymmetric() { return this == CONTRADICTS || this == TENSION; }
 
     /** Relacion de una hipotesis con una estructura. No lleva peso: el peso es la credibilidad de la estructura. */
     public boolean isExplanatory() { return this == EXPLAINS || this == LEAVES_UNEXPLAINED || this == IN_TENSION_WITH; }
+
+    /** Relaciones entre o desde hipotesis: no llevan peso propio. */
+    public boolean isUnweighted() { return isExplanatory() || this == COMPOSED_OF; }
 }

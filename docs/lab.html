@@ -193,6 +193,7 @@ svg g.node { cursor: pointer; outline: none; }
   const derive = (stage, st, ...fs) => fs.map(f => R(stage, st, 'DERIVED_FROM', f));
   const links = type => (stage, h, ...ss) => ss.map(st => R(stage, h, type, st));
   const explains = links('EXPLAINS'), tension = links('IN_TENSION_WITH'), unexplained = links('LEAVES_UNEXPLAINED');
+  const composedOf = links('COMPOSED_OF');
   const cite = (stage, n, src, q) => R(stage, n, 'SOURCED_FROM', src, q);
   // Apoyo u objeción a una fuente, sobre su sinceridad, competencia o independencia.
   const about = (stage, from, type, src, aspect, s) => ({ ...R(stage, from, type, src, s), aspect });
@@ -283,7 +284,7 @@ svg g.node { cursor: pointer; outline: none; }
       kicker: 'Piloto · el método de Maxi, cluster "desconexión"',
       title: 'Dureza y desconexión',
       lede: 'La base teórica del método de bodywork de Maxi, tomada de la planilla del piloto y de sus respuestas del 19/10. Casi todo sale de una sola raíz, la práctica de Maxi, así que las estructuras que se arman solo con eso no pasan de 0.5. Sin nombres de clientes.',
-      view: [1500, 700],
+      view: [1500, 720],
       sources: {
         'src-practica': { d: 'Práctica de Maxi: lo que observa al palpar y trabajar, sin medición', stage: 0 },
         'src-testimonios': { d: 'Testimonios elegidos para el sitio', stage: 0 },
@@ -325,11 +326,14 @@ svg g.node { cursor: pointer; outline: none; }
         H07: { kind: 'H', stage: 1, short: 'Retonificar', text: 'Las 4 a 8 semanas son el tiempo que necesita el cuerpo para retonificar los músculos de las zonas liberadas' },
         H08: { kind: 'H', stage: 1, short: 'Energía liberada', text: 'La energía extra es energía que la persona gastaba sosteniendo la tensión' },
         H09: { kind: 'H', stage: 1, short: 'Expectativa', text: 'La energía extra se explica por expectativa u otros cambios en la vida del paciente' },
+        H10: { kind: 'H', stage: 1, short: 'Desconecta + retonifica', text: 'La dureza desconecta la zona, y las semanas son lo que tarda en retonificarse' },
+        H11: { kind: 'H', stage: 1, short: 'Liberada + expectativa', text: 'La energía extra es en parte tensión liberada y en parte expectativa' },
       }, at([
-        [80, X9, ['H06', 'H04', 'H03', 'H01', 'H02', 'H05', 'H07', 'H08', 'H09']],
-        [270, X9, ['S4', 'S10', 'S2', 'S5', 'S1', 'S8', 'S6', 'S7', 'S9']],
-        [440, X9, ['F7', 'F14', 'F4', 'F5', 'F1', 'F12', 'F10', 'F11', 'F13']],
-        [530, [90, 254, 418, 664, 910, 1074, 1402], ['F2', 'F15', 'F9', 'F3', 'F6', 'O10', 'F8']],
+        [80, [828, 1320], ['H10', 'H11']],
+        [190, X9, ['H06', 'H04', 'H03', 'H01', 'H02', 'H05', 'H07', 'H08', 'H09']],
+        [370, X9, ['S4', 'S10', 'S2', 'S5', 'S1', 'S8', 'S6', 'S7', 'S9']],
+        [540, X9, ['F7', 'F14', 'F4', 'F5', 'F1', 'F12', 'F10', 'F11', 'F13']],
+        [630, [90, 254, 418, 664, 910, 1074, 1402], ['F2', 'F15', 'F9', 'F3', 'F6', 'O10', 'F8']],
       ])),
       rels: [
         cite(0, 'F1', 'src-practica', 0.9), cite(0, 'F2', 'src-practica', 0.8), cite(0, 'F3', 'src-practica', 0.85),
@@ -345,12 +349,13 @@ svg g.node { cursor: pointer; outline: none; }
         ...explains(1, 'H01', 'S8'), ...explains(1, 'H02', 'S6', 'S7'), ...explains(1, 'H05', 'S6'), ...explains(1, 'H04', 'S10'),
         ...unexplained(1, 'H06', 'S10'), ...explains(1, 'H07', 'S7'), ...explains(1, 'H08', 'S9'), ...explains(1, 'H09', 'S9'),
         R(1, 'H08', 'CONTRADICTS', 'H09', 0.6),
+        ...composedOf(1, 'H10', 'H01', 'H07'), ...composedOf(1, 'H11', 'H08', 'H09'),
       ],
       scenarios: [
         { name: '1. El piloto', stage: 0, sel: 'S2',
           text: 'Todo lo que observa Maxi sale de una sola raíz, su práctica, así que una estructura armada con dos observaciones suyas vale lo mismo que con una: S1 queda en 0.49. La única estructura con dos raíces es S2 (dureza junto con carga emocional): la sostienen la práctica y los testimonios, y llega a 0.75. H03, que explica tres estructuras, queda arriba; H06 no explica nada y se queda en 0.2.' },
         { name: '2. Respuestas del 19/10', stage: 1, sel: 'F10',
-          text: 'La liberación rápida (F10) es el facto más creíble, 0.66, porque tiene dos patas independientes: lo que vio Maxi y lo que dijo la bailarina, que entra como una observación aparte. Si alguien duda de la review de la bailarina, le saca solo esa pata. Fascia y neuromuscular explican las dos la liberación rápida. La energía extra (S9) la explican igual de bien H08 y H09: quedan empatadas, porque el índice no mide qué estructura distingue entre hipótesis.' },
+          text: 'La liberación rápida (F10) es el facto más creíble, 0.66, porque tiene dos patas independientes: lo que vio Maxi y lo que dijo la bailarina, que entra como una observación aparte. Si alguien duda de la review de la bailarina, le saca solo esa pata. Fascia y neuromuscular explican las dos la liberación rápida. La energía extra (S9) la explican igual de bien H08 y H09: quedan empatadas, porque el índice no mide qué estructura distingue entre hipótesis. Arriba hay dos hipótesis compuestas: en H10 cada parte explica algo propio; en H11 las dos partes explican solo S9, así que cada una sobra frente a la otra y la compuesta no vale más que H08 sola.' },
       ],
       footer: 'Fuente: planilla "Bodywork · Piloto esquema epistemológico" y respuestas de Maxi del 19/10. Las relaciones "explica" salen de las predicciones que Claude propuso y Maxi aceptó; H06 y H09 son rivales propuestas por Claude.',
     },
@@ -446,12 +451,21 @@ svg g.node { cursor: pointer; outline: none; }
   // ---------- Hipótesis (espejo de engine/HypothesisIndex.java) ----------
   // L(H) = logit(NEUTRAL) + W·Σ p(S que explica) − W·Σ p(S que tensiona). "No explica" se muestra y no pesa.
   function hypotheses() {
+    // Lo de h más lo de sus partes, sin repetir.
+    const targets = (h, type) => out(h).filter(r => r.type === type).map(r => r.to);
+    const collect = (h, type) => [...new Set([...targets(h, type), ...targets(h, 'COMPOSED_OF').flatMap(x => collect(x, type))])];
     return Object.keys(NODES).filter(k => NODES[k].kind === 'H').map(h => {
-      const of = type => out(h).filter(r => r.type === type).map(r => r.to);
-      const explains = of('EXPLAINS'), tension = of('IN_TENSION_WITH'), unexplained = of('LEAVES_UNEXPLAINED');
+      const explains = collect(h, 'EXPLAINS'), tension = collect(h, 'IN_TENSION_WITH');
+      const unexplained = collect(h, 'LEAVES_UNEXPLAINED').filter(s => !explains.includes(s));
+      const parts = targets(h, 'COMPOSED_OF');
+      // Una parte sobra si todo lo que explica ya lo explican las otras (D23).
+      const redundant = parts.filter(x => {
+        const others = new Set(parts.filter(o => o !== x).flatMap(o => collect(o, 'EXPLAINS')));
+        return collect(x, 'EXPLAINS').every(s => others.has(s));
+      });
       const sum = ss => ss.reduce((a, s) => a + cred(s), 0);
       const l = clampL(logit(NEUTRAL) + W * sum(explains) - W * sum(tension));
-      return { h, l, p: sig(l), explains, tension, unexplained };
+      return { h, l, p: sig(l), explains, tension, unexplained, parts, redundant };
     });
   }
 
@@ -471,10 +485,11 @@ svg g.node { cursor: pointer; outline: none; }
   }
 
   const HYP_RELS = ['EXPLAINS', 'LEAVES_UNEXPLAINED', 'IN_TENSION_WITH'];
+  const HYP_UP = [...HYP_RELS, 'COMPOSED_OF'];
   function affectedBy(n) {
     const res = [];
     RELS.forEach(r => {
-      if (r.to === n && ['DERIVED_FROM', 'SOURCED_FROM', ...HYP_RELS, 'CONTRADICTS', 'TENSION'].includes(r.type)) res.push([r.from, r.s]);
+      if (r.to === n && ['DERIVED_FROM', 'SOURCED_FROM', ...HYP_UP, 'CONTRADICTS', 'TENSION'].includes(r.type)) res.push([r.from, r.s]);
       if (r.from === n && ['SUPPORTS', 'UNDERMINES', 'CONTRADICTS', 'TENSION'].includes(r.type)) res.push([r.to, r.s]);
     });
     return res;
@@ -590,7 +605,9 @@ svg g.node { cursor: pointer; outline: none; }
 
   const tags = (ids, cls) => ids.map(s => `<span class="tag ${cls}" title="${NODES[s].text}">${s} ${fp(cred(s))}</span>`).join('');
   function hypDetail(r) {
-    return `${r.explains.length ? `<div class="tags">explica ${tags(r.explains, '')}</div>` : '<div>no explica ninguna estructura</div>'}
+    return `${r.parts.length ? `<div class="tags">compuesta de ${r.parts.map(x => `<span class="tag ${r.redundant.includes(x) ? 'warn' : ''}" title="${NODES[x].text}">${x}${r.redundant.includes(x) ? ' · sobra' : ''}</span>`).join('')}</div>` : ''}
+      ${r.redundant.length ? `<div>${r.redundant.join(', ')} no explica${r.redundant.length > 1 ? 'n' : ''} nada que las otras partes no expliquen.</div>` : ''}
+      ${r.explains.length ? `<div class="tags">explica ${tags(r.explains, '')}</div>` : '<div>no explica ninguna estructura</div>'}
       ${r.tension.length ? `<div class="tags">tensiona ${tags(r.tension, 'warn')}</div>` : ''}
       ${r.unexplained.length ? `<div class="tags">deja sin explicar ${tags(r.unexplained, 'off')}</div>` : ''}`;
   }
@@ -655,7 +672,7 @@ svg g.node { cursor: pointer; outline: none; }
     } else {
       const r = hyps.find(x => x.h === id);
       body = `<div class="label">Índice <span class="mono">${fp(r.p)}</span> · log-odds <span class="mono">${signL(r.l)}</span></div>
-        <div class="note">Parte de 0.2. Cada estructura que explica suma su credibilidad (× ${W}); cada una con la que entra en tensión la resta. Las que deja sin explicar se muestran pero no pesan.</div>
+        <div class="note">Parte de 0.2. Cada estructura que explica suma su credibilidad (× ${W}); cada una con la que entra en tensión la resta. Las que deja sin explicar se muestran pero no pesan.${r.parts.length ? ' Una compuesta cuenta lo de sus partes, cada estructura una vez, y cada parte tiene que explicar algo que las otras no.' : ''}</div>
         <div class="detail" style="margin-top:8px">${hypDetail(r)}</div>`;
     }
     const panel = document.getElementById('nodePanel');
