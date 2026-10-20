@@ -23,7 +23,7 @@ Maxi trabaja en paralelo con Claude (chat) y con Claude Code, y la planilla es e
 2. **El sistema se regula solo con su matemática.** No hay moderadores que bloqueen debates: una objeción sin factos pesa casi nada y queda abajo.
 3. **No existe el 0 ni el 1.** Todo valor está en el intervalo abierto (0, 1), tiende a 0 pero nunca llega (regla de Cromwell). Implementado en log-odds.
 4. **Nada se borra.** Todo es un evento; las versiones y la historia salen del log.
-5. **Los valores de estructuras e hipótesis no se ponen a mano: se derivan.** Lo único que se ingresa es la confianza de base de cada fuente.
+5. **Ningún valor se pone a mano: todo se deriva.** Nadie arranca con credibilidad propia: fuentes, factos y estructuras parten del mismo valor neutral (0.2, el de una afirmación sin sostén) y suben o bajan por argumentos. En una fuente, los argumentos son sobre su sinceridad, competencia o independencia (D18, D27).
 6. **Las copias no suman:** fuentes que derivan de la misma raíz cuentan como una.
 7. La "vida propia" del documento = un proceso que sigue corriendo y propagando cambios, como un thread. No es una metáfora biológica.
 

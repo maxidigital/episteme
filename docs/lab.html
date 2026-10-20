@@ -138,7 +138,6 @@ svg g.node { cursor: pointer; outline: none; }
 .src-head { display: flex; justify-content: space-between; gap: 8px; font-size: 0.86rem; }
 .src-head .mono { white-space: nowrap; }
 .src-meta { font-size: 0.78rem; color: var(--muted); }
-.src input[type="range"] { width: 100%; accent-color: var(--accent); }
 .cite { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; font-size: 0.85rem; }
 .derivs { font-size: 0.85rem; display: grid; gap: 4px; margin-top: 6px; }
 </style>
@@ -179,7 +178,7 @@ svg g.node { cursor: pointer; outline: none; }
       <section class="panel" aria-label="Nodo seleccionado" id="nodePanel"></section>
       <section class="panel" aria-label="Fuentes">
         <h2>Fuentes</h2>
-        <p class="note">La confianza de base es el ancla del cálculo y se puede discutir como cualquier otra cosa. Las copias cuentan como una sola fuente independiente.</p>
+        <p class="note">Ninguna fuente trae credibilidad propia: todas parten de 0.2, como cualquier afirmación, y suben o bajan por lo que se argumenta sobre su sinceridad, competencia o independencia. Las copias cuentan como una sola fuente independiente.</p>
         <div id="sources-panel" class="srcs"></div>
       </section>
       <section class="panel" aria-label="Conflictos">
@@ -200,6 +199,8 @@ svg g.node { cursor: pointer; outline: none; }
   const derive = (stage, st, ...fs) => fs.map(f => R(stage, st, 'DERIVED_FROM', f));
   const pred = (stage, h, ...ps) => ps.map(p => R(stage, h, 'PREDICTS', p));
   const cite = (stage, n, src, q) => R(stage, n, 'SOURCED_FROM', src, q);
+  // Apoyo u objeción a una fuente, sobre su sinceridad, competencia o independencia.
+  const about = (stage, from, type, src, aspect, s) => ({ ...R(stage, from, type, src, s), aspect });
   const at = (layout) => Object.fromEntries(layout.flatMap(([y, xs, ids]) => ids.map((id, i) => [id, { x: xs[i], y }])));
   const X5 = [172, 336, 500, 664, 828], X6 = [90, 254, 418, 582, 746, 910];
   const withPos = (nodes, pos) => { for (const k in nodes) Object.assign(nodes[k], pos[k]); return nodes; };
@@ -212,14 +213,16 @@ svg g.node { cursor: pointer; outline: none; }
       lede: 'En la clínica 1, atendida por médicos y estudiantes, morían muchas más madres que en la clínica 2, atendida por parteras. Las etapas muestran el árbol tal como se podía armar en cada momento; lo que todavía no existía aparece tenue y no cuenta. La credibilidad de cada dato sale de sus fuentes, y todas las fuentes sobre la mortalidad derivan de los mismos registros del hospital.',
       view: [1000, 700],
       sources: {
-        'src-reg': { d: 'Registros de mortalidad del Hospital General de Viena', prior: 0.90, stage: 0 },
-        'src-etio': { d: 'Semmelweis, Etiología de la fiebre puerperal (1861)', prior: 0.80, from: 'src-reg', stage: 0 },
-        'src-wiki': { d: 'Wikipedia, Ignaz Semmelweis', prior: 0.70, from: 'src-etio', stage: 0 },
-        'src-jll': { d: 'James Lind Library', prior: 0.80, from: 'src-etio', stage: 0 },
-        'src-aut': { d: 'Informe de autopsia de Jakob Kolletschka', prior: 0.85, stage: 1 },
-        'src-gaz': { d: 'Gazette médicale de Paris, editorial', prior: 0.70, stage: 3 },
+        'src-reg': { d: 'Registros de mortalidad del Hospital General de Viena', stage: 0 },
+        'src-etio': { d: 'Semmelweis, Etiología de la fiebre puerperal (1861)', from: 'src-reg', stage: 0 },
+        'src-wiki': { d: 'Wikipedia, Ignaz Semmelweis', from: 'src-etio', stage: 0 },
+        'src-jll': { d: 'James Lind Library', from: 'src-etio', stage: 0 },
+        'src-aut': { d: 'Informe de autopsia de Jakob Kolletschka', stage: 1 },
+        'src-gaz': { d: 'Gazette médicale de Paris, editorial', stage: 3 },
+        'src-hist': { d: 'Historiadores de la medicina (Loudon 2000; Carter, traducción de la Etiología, 1983)', stage: 0 },
       },
       nodes: withPos({
+        F0:  { kind: 'F', stage: 0, short: 'Registros oficiales', text: 'Los registros de mortalidad eran oficiales y anuales, y los historiadores los usan como fuente' },
         F1:  { kind: 'F', stage: 0, short: 'Clínica 1: ~10%', text: 'Clínica 1 (médicos y estudiantes): mortalidad cercana al 10% entre 1841 y 1846' },
         F2:  { kind: 'F', stage: 0, short: 'Clínica 2: <4%', text: 'Clínica 2 (parteras): mortalidad por debajo del 4% en el mismo período' },
         F3:  { kind: 'F', stage: 0, short: 'Admisión alternada', text: 'Las pacientes se asignaban a una u otra clínica en días alternos' },
@@ -258,9 +261,10 @@ svg g.node { cursor: pointer; outline: none; }
         [390, X6, ['S1', 'S2', 'S3', 'S4', 'S5', 'S6']],
         [515, X5, ['F3', 'F1', 'F2', 'F4', 'F5']],
         [590, X5, ['F7', 'F8', 'F6', 'F9', 'F10']],
-        [665, [920], ['F11']],
+        [665, [172, 920], ['F0', 'F11']],
       ])),
       rels: [
+        cite(0, 'F0', 'src-hist', 0.9), about(0, 'F0', 'SUPPORTS', 'src-reg', 'COMPETENCE', 1.0),
         cite(0, 'F1', 'src-reg', 0.95), cite(0, 'F1', 'src-wiki', 0.9), cite(0, 'F2', 'src-reg', 0.95), cite(0, 'F2', 'src-wiki', 0.9),
         cite(0, 'F3', 'src-jll', 0.9), cite(0, 'F4', 'src-etio', 0.8), cite(0, 'F4', 'src-wiki', 0.8), cite(0, 'F5', 'src-etio', 0.7),
         cite(0, 'F6', 'src-etio', 0.9), cite(0, 'F6', 'src-wiki', 0.9), cite(0, 'F7', 'src-etio', 0.8), cite(0, 'F8', 'src-etio', 0.8),
@@ -288,7 +292,7 @@ svg g.node { cursor: pointer; outline: none; }
     },
   };
 
-  const W = 4.0, PRIOR_CLAIM = 0.2, DAMPING = 0.5, TOL = 1e-10, MAX_IT = 1000, MAXL = 30, CREDIBLE = 0.5;
+  const W = 4.0, NEUTRAL = 0.2, DAMPING = 0.5, TOL = 1e-10, MAX_IT = 1000, MAXL = 30, CREDIBLE = 0.5;
   const VERDICT = { CONFIRMED: 'se cumple', REFUTED: 'falla', CONTESTED: 'en disputa', PENDING: 'por probar' };
   const KIND_LINE = { F: 'Facto · nivel 0', S: 'Estructura · nivel 1', P: 'Predicción · nivel 2', H: 'Hipótesis · nivel 2' };
   const grade = p => p >= 0.9 ? 'A' : p >= 0.75 ? 'B' : p >= 0.5 ? 'C' : 'D';
@@ -297,7 +301,7 @@ svg g.node { cursor: pointer; outline: none; }
   const sig = l => 1 / (1 + Math.exp(-clampL(l)));
 
   let C, NODES, RELS, SRC, SCENARIOS;
-  const state = { caseId: 'semmelweis', stage: 0, priors: {}, selected: null, threshold: 0.1, scenario: 0 };
+  const state = { caseId: 'semmelweis', stage: 0, selected: null, threshold: 0.1, scenario: 0 };
 
   function useCase(id) { state.caseId = id; C = CASES[id]; SCENARIOS = C.scenarios; }
 
@@ -310,7 +314,6 @@ svg g.node { cursor: pointer; outline: none; }
   const exists = id => id in NODES || id in SRC;
   const kindOf = id => id in SRC ? 'SRC' : NODES[id].kind;
   const isEvidence = id => id in SRC || NODES[id].kind === 'F' || NODES[id].kind === 'S';
-  const priorOf = id => state.priors[id] ?? SRC[id].prior;
   const rootOf = id => { let s = id; while (SRC[s].from) s = SRC[s].from; return s; };
   const out = id => RELS.filter(r => r.from === id);
   const inc = id => RELS.filter(r => r.to === id);
@@ -345,14 +348,13 @@ svg g.node { cursor: pointer; outline: none; }
     const ev = [...Object.keys(SRC), ...Object.keys(NODES).filter(isEvidence)];
     const roots = Object.fromEntries(ev.map(id => [id, rootsOf(id)]));
     L = {};
-    ev.forEach(id => L[id] = kindOf(id) === 'SRC' ? logit(priorOf(id)) : logit(PRIOR_CLAIM));
+    ev.forEach(id => L[id] = logit(NEUTRAL));
     const p = id => sig(L[id]);
     const sustain = id => W * independent(out(id)
       .filter(r => r.type === 'SOURCED_FROM' || r.type === 'DERIVED_FROM')
       .map(r => [roots[r.to], r.s * p(r.to)]));
     const target = id => {
-      const k = kindOf(id);
-      let base = k === 'SRC' ? logit(priorOf(id)) : logit(PRIOR_CLAIM) + sustain(id);
+      const base = logit(NEUTRAL) + sustain(id);
       const pro = [], con = [];
       inc(id).forEach(r => {
         if (r.type === 'SUPPORTS') pro.push([roots[r.from], r.s * p(r.from)]);
@@ -624,21 +626,18 @@ svg g.node { cursor: pointer; outline: none; }
     panel.querySelector('#thr')?.addEventListener('input', e => { state.threshold = parseFloat(e.target.value); render(); document.getElementById('thr').focus(); });
   }
 
+  const ASPECT = { SINCERITY: 'sinceridad', COMPETENCE: 'competencia', INDEPENDENCE: 'independencia' };
   function renderSources() {
     const box = document.getElementById('sources-panel');
     box.innerHTML = Object.entries(SRC).map(([id, s]) => {
-      const pr = priorOf(id), changed = state.priors[id] !== undefined && Math.abs(state.priors[id] - s.prior) > 1e-9;
       const users = RELS.filter(r => r.type === 'SOURCED_FROM' && r.to === id).map(r => r.from);
+      const args = inc(id).filter(r => r.type === 'SUPPORTS' || r.type === 'UNDERMINES');
       return `<div class="src">
-        <div class="src-head"><label for="pr-${id}">${s.d}</label><span class="mono">${pr.toFixed(2)}${changed ? ` (era ${s.prior.toFixed(2)})` : ''}</span></div>
-        <input type="range" id="pr-${id}" data-src="${id}" min="0.01" max="0.99" step="0.01" value="${pr}">
+        <div class="src-head"><span>${s.d}</span><span class="mono">${fp(cred(id))}</span></div>
         <div class="src-meta">${s.from ? `copia de: ${SRC[s.from].d} · ` : 'fuente original · '}${users.length ? 'la citan ' + users.join(', ') : 'nadie la cita todavía'}</div>
+        ${args.map(r => `<div class="src-meta">${r.type === 'SUPPORTS' ? '+' : '−'} ${ASPECT[r.aspect] ?? 'en general'}: <span class="mono">${r.from}</span> ${label(r.from)} (${fp(cred(r.from))})</div>`).join('')}
       </div>`;
     }).join('');
-    box.querySelectorAll('[data-src]').forEach(inp => inp.addEventListener('input', e => {
-      state.priors[e.target.dataset.src] = parseFloat(e.target.value); state.scenario = -1; render();
-      document.getElementById('pr-' + e.target.dataset.src)?.focus();
-    }));
   }
 
   function renderConflicts() {
@@ -663,14 +662,12 @@ svg g.node { cursor: pointer; outline: none; }
     const box = document.getElementById('scenButtons');
     box.innerHTML = SCENARIOS.map((sc, i) => `<button type="button" class="chipbtn" id="sc-${i}" data-i="${i}" aria-pressed="${state.scenario === i}">${sc.name}</button>`).join('');
     box.querySelectorAll('[data-i]').forEach(b => b.addEventListener('click', () => loadScenario(+b.dataset.i)));
-    document.getElementById('scenText').textContent = state.scenario >= 0
-      ? SCENARIOS[state.scenario].text
-      : 'Cambiaste la confianza en alguna fuente. Elegí una etapa para volver a los valores originales.';
+    document.getElementById('scenText').textContent = SCENARIOS[state.scenario].text;
   }
 
   function loadScenario(i) {
     const sc = SCENARIOS[i];
-    state.scenario = i; state.stage = sc.stage; state.priors = {}; state.selected = sc.sel;
+    state.scenario = i; state.stage = sc.stage; state.selected = sc.sel;
     render();
   }
 
@@ -688,7 +685,7 @@ svg g.node { cursor: pointer; outline: none; }
     Object.keys(CASES).forEach(caseId => {
       useCase(caseId);
       [...new Set(SCENARIOS.map(sc => sc.stage))].forEach(stage => {
-        state.stage = stage; state.priors = {}; view(); computeCredibility();
+        state.stage = stage; view(); computeCredibility();
         [...Object.keys(SRC), ...Object.keys(NODES).filter(isEvidence)]
           .forEach(id => lines.push(`${caseId} ${stage} ${id} ${cred(id).toFixed(6)}`));
       });

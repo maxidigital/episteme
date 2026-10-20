@@ -14,12 +14,17 @@ final class CaseBuilder {
 
     long version() { return log.version(); }
 
-    CaseBuilder source(String id, String description, double prior) {
-        return add(new SourceAdded(Source.original(id, description, prior)));
+    CaseBuilder source(String id, String description) {
+        return add(new SourceAdded(Source.original(id, description)));
     }
 
-    CaseBuilder copy(String id, String description, String from, double prior) {
-        return add(new SourceAdded(Source.derived(id, description, from, prior)));
+    CaseBuilder copy(String id, String description, String from) {
+        return add(new SourceAdded(Source.derived(id, description, from)));
+    }
+
+    /** from apoya (SUPPORTS) u objeta (UNDERMINES) a la fuente src en uno de sus tres aspectos. */
+    CaseBuilder about(String from, RelationType type, String src, Aspect aspect, double strength) {
+        return add(new RelationAdded(Relation.about(id(from, type, src), from, type, src, aspect, strength)));
     }
 
     CaseBuilder fact(String id, String statement) { return add(new NodeAdded(Node.fact(id, statement))); }

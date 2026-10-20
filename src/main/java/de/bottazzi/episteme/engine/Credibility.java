@@ -7,24 +7,21 @@ import java.util.*;
 
 /**
  * Credibilidad de toda la evidencia (fuentes, factos, observaciones, estructuras), calculada como
- * punto fijo, al estilo PageRank. Nada se ingresa a mano salvo la confianza de base de las fuentes.
+ * punto fijo, al estilo PageRank. No se ingresa ningun valor a mano: todo parte de {@link #NEUTRAL},
+ * fuentes incluidas, y sube o baja por argumentos.
  *
  * <p>Todo se suma en log-odds, asi que p nunca llega a 0 ni a 1 (regla de Cromwell):
  * <pre>
- * base(fuente)      = logit(prior)
- * base(facto)       = logit(PRIOR_CLAIM)       + sosten
- * base(observacion) = logit(PRIOR_OBSERVATION) + sosten
- * base(estructura)  = logit(PRIOR_CLAIM)       + sosten
- * sosten            = sum por raiz independiente de W * max(k * p) de sus patas
- * L(n)              = base(n) + W * apoyos - W * ataques
- * apoyos, ataques   = sum por raiz independiente de max(k * p(x))
+ * L(n)                    = logit(NEUTRAL) + W * sosten - W * ataques + W * apoyos
+ * sosten, apoyos, ataques = sum por raiz independiente de max(k * p(x))
  * </pre>
  * Los ataques son objeciones, contradicciones y tensiones.
  * Las patas de un nodo son las fuentes que cita (k = calidad de la cita) y los elementos de los que deriva.
  * Patas que comparten una raiz son copias: de ellas cuenta solo la mejor. Tres diarios que copian el mismo
  * comunicado aportan una sola cita; una estructura crece con cada elemento independiente que la forma;
  * cien personas repitiendo la misma objecion desde la misma raiz son una sola objecion.
- * Una afirmacion sin fuentes ni apoyos queda en PRIOR_CLAIM: poco creible, pero no cero.
+ * Una afirmacion sin fuentes ni apoyos queda en NEUTRAL: poco creible, pero no cero. Una fuente no cita
+ * ni deriva de nada: solo la mueven los apoyos y objeciones a su sinceridad, competencia o independencia.
  *
  * <p>Se itera con amortiguacion hasta que ningun valor cambia mas que {@link #TOLERANCE}.
  */
@@ -32,8 +29,11 @@ public final class Credibility {
 
     /** Peso de una pieza de evidencia de credibilidad 1 y fuerza 1, en log-odds. */
     public static final double W = 4.0;
-    public static final double PRIOR_CLAIM = 0.2;
-    public static final double PRIOR_OBSERVATION = 0.1;
+    /**
+     * Valor neutral: de donde parte todo, fuentes incluidas. Es tambien lo que vale una afirmacion sin
+     * nada que la sostenga. Es el unico valor de partida del sistema (D18, D27).
+     */
+    public static final double NEUTRAL = 0.2;
     public static final double DAMPING = 0.5;
     public static final double TOLERANCE = 1e-10;
     public static final int MAX_ITERATIONS = 1000;
@@ -49,7 +49,7 @@ public final class Credibility {
         this.g = g;
         this.evidence = g.nodes().stream().filter(n -> n.kind().isEvidence()).map(Node::id).toList();
         for (NodeId id : evidence) {
-            logit.put(id, initial(id));
+            logit.put(id, LogOdds.logit(NEUTRAL));
             roots.put(id, g.rootsOf(id));
         }
 
@@ -72,23 +72,8 @@ public final class Credibility {
         this.converged = done;
     }
 
-    private double initial(NodeId id) {
-        Node n = g.node(id);
-        return switch (n.kind()) {
-            case SOURCE -> LogOdds.logit(g.source(id).prior());
-            case OBSERVATION -> LogOdds.logit(PRIOR_OBSERVATION);
-            default -> LogOdds.logit(PRIOR_CLAIM);
-        };
-    }
-
     private double target(NodeId id) {
-        Node n = g.node(id);
-        double base = switch (n.kind()) {
-            case SOURCE -> LogOdds.logit(g.source(id).prior());
-            case FACT, STRUCTURE -> LogOdds.logit(PRIOR_CLAIM) + sustain(id);
-            case OBSERVATION -> LogOdds.logit(PRIOR_OBSERVATION) + sustain(id);
-            case PREDICTION, HYPOTHESIS -> throw new IllegalStateException("No es evidencia: " + id);
-        };
+        double base = LogOdds.logit(NEUTRAL) + sustain(id);
         List<Leg> pro = new ArrayList<>(), con = new ArrayList<>();
         for (Relation r : g.incoming(id)) {
             switch (r.type()) {

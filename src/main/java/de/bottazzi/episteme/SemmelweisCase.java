@@ -1,5 +1,6 @@
 package de.bottazzi.episteme;
 
+import de.bottazzi.episteme.model.Aspect;
 import de.bottazzi.episteme.store.EventLog;
 
 import static de.bottazzi.episteme.model.RelationType.*;
@@ -25,10 +26,16 @@ public final class SemmelweisCase {
     public static Stages seed() {
         CaseBuilder b = new CaseBuilder();
 
-        b.source("src-reg", "Registros de mortalidad del Hospital General de Viena", 0.90)
-         .copy("src-etio", "Semmelweis, Etiologia de la fiebre puerperal (1861)", "src-reg", 0.80)
-         .copy("src-wiki", "Wikipedia, Ignaz Semmelweis", "src-etio", 0.70)
-         .copy("src-jll", "James Lind Library, estudios de Semmelweis", "src-etio", 0.80);
+        b.source("src-reg", "Registros de mortalidad del Hospital General de Viena")
+         .copy("src-etio", "Semmelweis, Etiologia de la fiebre puerperal (1861)", "src-reg")
+         .copy("src-wiki", "Wikipedia, Ignaz Semmelweis", "src-etio")
+         .copy("src-jll", "James Lind Library, estudios de Semmelweis", "src-etio")
+         .source("src-hist", "Historiadores de la medicina (Loudon 2000; Carter, traduccion de la Etiologia, 1983)");
+
+        // Nadie arranca con credibilidad propia: los registros valen por lo que se sabe de ellos.
+        b.fact("F0", "Los registros de mortalidad eran oficiales y anuales, y los historiadores los usan como fuente")
+         .cites("F0", "src-hist", 0.9)
+         .about("F0", SUPPORTS, "src-reg", Aspect.COMPETENCE, 1.0);
 
         // ---- Etapa 1: principios de 1847 ----
         b.fact("F1", "Clinica 1 (medicos y estudiantes): mortalidad cercana al 10% entre 1841 y 1846").cites("F1", "src-reg", 0.95).cites("F1", "src-wiki", 0.9)
@@ -62,7 +69,7 @@ public final class SemmelweisCase {
         long early = b.version();
 
         // ---- Etapa 2: marzo de 1847, muere Kolletschka ----
-        b.source("src-aut", "Informe de autopsia de Jakob Kolletschka", 0.85)
+        b.source("src-aut", "Informe de autopsia de Jakob Kolletschka")
          .fact("F9", "Kolletschka murio tras cortarse en una autopsia, con hallazgos iguales a los de la fiebre puerperal")
          .cites("F9", "src-aut", 0.9).cites("F9", "src-etio", 0.9)
          .structure("S5", "Una herida con material de autopsia produce el mismo cuadro").derive("S5", "F9")
@@ -83,7 +90,7 @@ public final class SemmelweisCase {
         long handwashing = b.version();
 
         // ---- Etapa 4: 1848, la objecion metodologica ----
-        b.source("src-gaz", "Gazette medicale de Paris, editorial", 0.70)
+        b.source("src-gaz", "Gazette medicale de Paris, editorial")
          .fact("F11", "Una caida de la mortalidad despues de una intervencion, sin grupo de control, no prueba que la intervencion la causo")
          .cites("F11", "src-gaz", 0.9)
          .rel("F11", UNDERMINES, "S6", 0.6);

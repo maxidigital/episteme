@@ -24,8 +24,8 @@ public final class BodyworkCase {
     public static Stages seed() {
         CaseBuilder b = new CaseBuilder();
 
-        b.source("src-practica", "Practica de Maxi: lo que observa al palpar y trabajar, sin medicion", 0.75)
-         .source("src-testimonios", "Testimonios elegidos para el sitio", 0.55);
+        b.source("src-practica", "Practica de Maxi: lo que observa al palpar y trabajar, sin medicion")
+         .source("src-testimonios", "Testimonios elegidos para el sitio");
 
         // ---- Etapa 1: el piloto tal como estaba en la planilla ----
         b.fact("F1", "Al palpar encuentra pelotas duras en los musculos, a veces tan duras que parecen hueso").cites("F1", "src-practica", 0.9)
@@ -64,8 +64,8 @@ public final class BodyworkCase {
         long pilot = b.version();
 
         // ---- Etapa 2: respuestas de Maxi del 19/10 ----
-        b.source("src-bailarina", "Lo que expreso una bailarina sobre su propio movimiento, y su review", 0.65)
-         .source("src-audio", "Mensaje de voz espontaneo de un paciente (dos sesiones)", 0.70);
+        b.source("src-bailarina", "Lo que expreso una bailarina sobre su propio movimiento, y su review")
+         .source("src-audio", "Mensaje de voz espontaneo de un paciente (dos sesiones)");
 
         b.fact("F10", "En una sesion aflojan muchas cosas; en el caso mas extremo, una bailarina se movia distinto esa misma noche")
          .cites("F10", "src-practica", 0.9).cites("F10", "src-bailarina", 0.85)

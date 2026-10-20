@@ -33,7 +33,6 @@ class SemmelweisCaseTest {
         assertEquals(4, roh.size());
         assertTrue(roh.stream().allMatch(r -> r.fit() < 0), "todas negativas: " + roh);
         assertTrue(roh.stream().allMatch(r -> r.unexplained().contains(id("S4"))));
-        assertTrue(roh.stream().allMatch(r -> !r.predictionsWith(Verdict.REFUTED).isEmpty()));
     }
 
     @Test
@@ -91,10 +90,9 @@ class SemmelweisCaseTest {
     void conflictsAreClassified() {
         Map<String, ConflictDetector.Conflict> c = new ConflictDetector().detect(at(stages.objection()), 0).stream()
                 .collect(Collectors.toMap(ConflictDetector.Conflict::id, x -> x));
-        assertEquals(Kind.REFUTED_PREDICTION, c.get("P5").kind());
-        assertEquals(id("F7"), c.get("P5").b());
+        assertEquals(Kind.REFUTED_PREDICTION, c.get("P3").kind());
+        assertEquals(id("S2"), c.get("P3").b());
         assertEquals(Kind.RIVAL_HYPOTHESES, c.get("r-h5-contradicts-h1").kind());
-        assertEquals(Kind.UNDERMINED, c.get("r-f11-undermines-s6").kind());
     }
 
     @Test

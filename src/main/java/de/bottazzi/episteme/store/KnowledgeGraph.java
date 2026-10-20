@@ -22,7 +22,6 @@ public final class KnowledgeGraph {
         if (event instanceof Event.NodeAdded e) addNode(e.node());
         else if (event instanceof Event.SourceAdded e) addSource(e.source());
         else if (event instanceof Event.RelationAdded e) addRelation(e.relation());
-        else if (event instanceof Event.SourcePriorSet e) setPrior(e.source(), e.prior());
         else throw new IllegalStateException("Evento desconocido: " + event);
     }
 
@@ -41,16 +40,12 @@ public final class KnowledgeGraph {
         sources.put(s.id(), s);
     }
 
-    private void setPrior(NodeId id, double p) {
-        Source s = sources.get(id);
-        if (s == null) throw new IllegalStateException("Fuente desconocida: " + id);
-        sources.put(id, s.withPrior(p));
-    }
-
     private void addRelation(Relation r) {
         if (relations.containsKey(r.id())) throw new IllegalStateException("Relacion duplicada: " + r.id());
         NodeKind from = requireNode(r.from()).kind();
         NodeKind to = requireNode(r.to()).kind();
+        if (r.aspect() != null && (to != NodeKind.SOURCE || (r.type() != RelationType.SUPPORTS && r.type() != RelationType.UNDERMINES)))
+            throw new IllegalStateException("Sinceridad, competencia e independencia son apoyos u objeciones a una fuente: " + r.id());
         if (r.type().isUnweighted() && r.strength() != 1.0)
             throw new IllegalStateException("Las relaciones de prediccion no llevan peso: " + r.id());
         String problem = switch (r.type()) {

@@ -22,9 +22,4 @@ public sealed interface Event {
     record RelationAdded(Relation relation) implements Event {
         public boolean touches(NodeId n) { return relation.touches(n); }
     }
-
-    /** Cambia la confianza de base en una fuente, con el motivo. */
-    record SourcePriorSet(NodeId source, double prior, String reason) implements Event {
-        public boolean touches(NodeId n) { return source.equals(n); }
-    }
 }
