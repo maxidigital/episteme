@@ -77,3 +77,9 @@ El nivel 1 busca estructura entre los factos (patrones, convergencias, correspon
 "3000 casos juntos y en un período de tiempo tal constituyen una evidencia de alto nivel", aunque cada uno sea testimonial. (Maxi, charla original)
 
 La fuerza de una estructura sale de **cuántos elementos independientes la forman**, no de su elemento más débil. La independencia se argumenta con el conocimiento de fondo: ¿pudieron 3000 personas de 40 países en 50 años comunicarse y ponerse de acuerdo? ¿Existía la posibilidad técnica? (Maxi) Si hay una raíz común (todos los relatos aparecen después de una película que muestra lo mismo), son copias y cuentan como uno. *(formulación de Claude, aceptada)*
+
+### Cómo se encontró una estructura
+
+Por defecto no importa cómo se encontró una estructura (anunciada antes de mirar o encontrada revisando los factos): "me da igual siempre y cuando tenga factos que lo soporten". (Maxi)
+
+Pero una estructura siempre se mide contra lo que daría el azar, que es parte del conocimiento de fondo: en 3000 relatos al azar caerían unos 14 en martes de luna llena, así que 40 es algo y 15 no es nada. Si alguien sospecha que la estructura salió de probar muchas combinaciones, eso entra como una duda con sus propios factos. Los factos que lleguen después la ponen a prueba. *(propuesta de Claude, aceptada)*
