@@ -2,7 +2,7 @@
 
 Inteligencia Natural (IN) es el proyecto de Maxi: una herramienta para que una comunidad discuta con argumentos y factos en vez de opiniones sueltas. Episteme es su motor: el núcleo lógico que calcula la credibilidad de la evidencia y el ajuste de las hipótesis. El nombre viene del griego: episteme, conocimiento justificado, frente a doxa, opinión. Este repo es solo el motor; la comunidad, la base de factos y la UI vienen después.
 
-Documento original de diseño (hecho con ChatGPT): `docs/resumen_maestro_sistema_epistemologico.pdf`. Página interactiva con la misma lógica en JS: `docs/lab.html` (abrir en el navegador).
+Documento original de diseño (hecho con ChatGPT): `docs/original/resumen_maestro_sistema_epistemologico.pdf` (congelado; el documento nuevo se escribe charlando con Maxi). Página interactiva con la misma lógica en JS: `docs/lab.html` (abrir en el navegador).
 
 ## Registro compartido
 
