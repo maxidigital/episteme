@@ -399,8 +399,8 @@ svg g.node { cursor: pointer; outline: none; }
     });
     return rs.size ? [...rs] : [NO_SOURCE];
   };
-  // Une las patas que comparten alguna raíz y suma la mejor de cada grupo.
-  const independent = legs => {
+  // Une las patas que comparten alguna raíz y devuelve la mejor de cada grupo.
+  const independentGroups = legs => {
     const groups = [];
     legs.forEach(([roots, v]) => {
       let rs = new Set(roots), b = v;
@@ -410,8 +410,9 @@ svg g.node { cursor: pointer; outline: none; }
       }
       groups.push({ rs, b });
     });
-    return groups.reduce((a, g) => a + g.b, 0);
+    return groups.map(g => g.b);
   };
+  const sum = xs => xs.reduce((a, x) => a + x, 0);
   let L = {}, ITER = 0, CONVERGED = false;
   function computeCredibility() {
     const ev = [...Object.keys(SRC), ...Object.keys(NODES).filter(isEvidence)];
@@ -419,9 +420,15 @@ svg g.node { cursor: pointer; outline: none; }
     L = {};
     ev.forEach(id => L[id] = logit(NEUTRAL));
     const p = id => sig(L[id]);
-    const sustain = id => W * independent(out(id)
-      .filter(r => r.type === 'SOURCED_FROM' || r.type === 'DERIVED_FROM')
-      .map(r => [roots[r.to], r.s * p(r.to)]));
+    const sustain = id => {
+      const groups = independentGroups(out(id)
+        .filter(r => r.type === 'SOURCED_FROM' || r.type === 'DERIVED_FROM')
+        .map(r => [roots[r.to], r.s * p(r.to)]));
+      return W * sum(groups) * beyondChance(id, groups.length);
+    };
+    // De los n elementos independientes cuentan solo los que superan al azar: 1 − p(fondo)·mín(1, e/n).
+    const beyondChance = (id, n) => 1 - inc(id).filter(r => r.type === 'EXPECTED_BY_CHANCE')
+      .reduce((d, r) => Math.max(d, p(r.from) * Math.min(1, r.expected / n)), 0);
     // Una deducción no agrega contenido: vale lo que su premisa más débil.
     const weakestPremise = id => {
       const ds = out(id).filter(r => r.type === 'DERIVED_FROM').map(r => r.s * p(r.to));
@@ -435,7 +442,7 @@ svg g.node { cursor: pointer; outline: none; }
         else if (['UNDERMINES', 'CONTRADICTS', 'TENSION'].includes(r.type)) con.push([roots[r.from], r.s * p(r.from)]);
       });
       out(id).forEach(r => { if (r.type === 'CONTRADICTS' || r.type === 'TENSION') con.push([roots[r.to], r.s * p(r.to)]); });
-      return base + W * independent(pro) - W * independent(con);
+      return base + W * sum(independentGroups(pro)) - W * sum(independentGroups(con));
     };
     let it = 0, done = false;
     while (it < MAX_IT && !done) {
@@ -463,8 +470,8 @@ svg g.node { cursor: pointer; outline: none; }
         const others = new Set(parts.filter(o => o !== x).flatMap(o => collect(o, 'EXPLAINS')));
         return collect(x, 'EXPLAINS').every(s => others.has(s));
       });
-      const sum = ss => ss.reduce((a, s) => a + cred(s), 0);
-      const l = clampL(logit(NEUTRAL) + W * sum(explains) - W * sum(tension));
+      const sumP = ss => ss.reduce((a, s) => a + cred(s), 0);
+      const l = clampL(logit(NEUTRAL) + W * sumP(explains) - W * sumP(tension));
       return { h, l, p: sig(l), explains, tension, unexplained, parts, redundant };
     });
   }
@@ -490,7 +497,7 @@ svg g.node { cursor: pointer; outline: none; }
     const res = [];
     RELS.forEach(r => {
       if (r.to === n && ['DERIVED_FROM', 'SOURCED_FROM', ...HYP_UP, 'CONTRADICTS', 'TENSION'].includes(r.type)) res.push([r.from, r.s]);
-      if (r.from === n && ['SUPPORTS', 'UNDERMINES', 'CONTRADICTS', 'TENSION'].includes(r.type)) res.push([r.to, r.s]);
+      if (r.from === n && ['SUPPORTS', 'UNDERMINES', 'EXPECTED_BY_CHANCE', 'CONTRADICTS', 'TENSION'].includes(r.type)) res.push([r.to, r.s]);
     });
     return res;
   }

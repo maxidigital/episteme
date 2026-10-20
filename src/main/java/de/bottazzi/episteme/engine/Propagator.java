@@ -20,6 +20,7 @@ import java.util.*;
  *   <li>EXPLAINS, LEAVES_UNEXPLAINED, IN_TENSION_WITH h->n: la hipotesis h se revisa.</li>
  *   <li>COMPOSED_OF h->n: la hipotesis compuesta h, de la que n es parte, se revisa.</li>
  *   <li>SUPPORTS n->y, UNDERMINES n->y: lo apoyado o atacado por n se revisa.</li>
+ *   <li>EXPECTED_BY_CHANCE n->y: la estructura y que se compara con el azar segun n se revisa.</li>
  *   <li>CONTRADICTS, TENSION: en ambas direcciones.</li>
  * </ul>
  *
@@ -70,12 +71,12 @@ public final class Propagator {
         for (Relation r : g.incoming(n)) {
             switch (r.type()) {
                 case DERIVED_FROM, SOURCED_FROM, EXPLAINS, LEAVES_UNEXPLAINED, IN_TENSION_WITH, COMPOSED_OF, CONTRADICTS, TENSION -> out.add(r);
-                case SUPPORTS, UNDERMINES -> { }
+                case SUPPORTS, UNDERMINES, EXPECTED_BY_CHANCE -> { }
             }
         }
         for (Relation r : g.outgoing(n)) {
             switch (r.type()) {
-                case SUPPORTS, UNDERMINES, CONTRADICTS, TENSION -> out.add(r);
+                case SUPPORTS, UNDERMINES, EXPECTED_BY_CHANCE, CONTRADICTS, TENSION -> out.add(r);
                 case DERIVED_FROM, SOURCED_FROM, EXPLAINS, LEAVES_UNEXPLAINED, IN_TENSION_WITH, COMPOSED_OF -> { }
             }
         }

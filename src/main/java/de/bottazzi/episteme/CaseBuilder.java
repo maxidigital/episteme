@@ -67,6 +67,11 @@ final class CaseBuilder {
         return this;
     }
 
+    /** El facto de fondo dice que el azar daria expected elementos de la estructura. */
+    CaseBuilder chance(String background, String structure, double expected) {
+        return add(new RelationAdded(Relation.chance(id(background, EXPECTED_BY_CHANCE, structure), background, structure, expected)));
+    }
+
     CaseBuilder rel(String from, RelationType type, String to, double strength) {
         return add(new RelationAdded(Relation.of(id(from, type, to), from, type, to, strength)));
     }

@@ -22,6 +22,24 @@ public final class LabParity {
         print("semmelweis", sem.log(), sem.early(), sem.kolletschka(), sem.handwashing(), sem.objection());
         var bw = BodyworkCase.seed();
         print("bodywork", bw.log(), bw.pilot(), bw.answers());
+        CaseBuilder chance = new CaseBuilder();
+        long before = chance(chance);
+        print("azar", chance.log, before, chance.version());
+    }
+
+    /**
+     * Prueba del azar (D29), que ningun caso usa todavia: 8 relatos independientes y un facto de fondo que
+     * dice que el azar daria 3. La misma prueba esta en tools/lab-parity.mjs. Devuelve la version de antes
+     * del facto de fondo.
+     */
+    private static long chance(CaseBuilder b) {
+        b.structure("S", "Los relatos caen en martes de luna llena");
+        for (int i = 0; i < 8; i++)
+            b.source("s" + i, "testigo " + i).fact("T" + i, "relato " + i).cites("T" + i, "s" + i, 0.8).derive("S", "T" + i);
+        long before = b.version();
+        b.source("cal", "calendario lunar").fact("B", "Por azar caerian unos 3 relatos en martes de luna llena")
+         .cites("B", "cal", 0.9).chance("B", "S", 3);
+        return before;
     }
 
     private static void print(String caseId, EventLog log, long... stages) {

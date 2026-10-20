@@ -47,7 +47,7 @@ public final class KnowledgeGraph {
         if (r.aspect() != null && (to != NodeKind.SOURCE || (r.type() != RelationType.SUPPORTS && r.type() != RelationType.UNDERMINES)))
             throw new IllegalStateException("Sinceridad, competencia e independencia son apoyos u objeciones a una fuente: " + r.id());
         if (r.type().isUnweighted() && r.strength() != 1.0)
-            throw new IllegalStateException("Las relaciones de una hipotesis no llevan peso: " + r.id());
+            throw new IllegalStateException("Esta relacion no lleva peso: " + r.id());
         if (r.type().isExplanatory() && outgoing.getOrDefault(r.from(), List.of()).stream()
                 .anyMatch(x -> x.type().isExplanatory() && x.to().equals(r.to())))
             throw new IllegalStateException("La hipotesis ya tiene una relacion con esa estructura: " + r.id());
@@ -65,6 +65,8 @@ public final class KnowledgeGraph {
                     ? null : "Una hipotesis choca con evidencia entrando en tension con una estructura";
             case EXPLAINS, LEAVES_UNEXPLAINED, IN_TENSION_WITH -> from == NodeKind.HYPOTHESIS && to == NodeKind.STRUCTURE
                     ? null : r.type() + " va de una hipotesis a una estructura";
+            case EXPECTED_BY_CHANCE -> from == NodeKind.FACT && to == NodeKind.STRUCTURE
+                    ? null : "La comparacion con el azar va de un facto de fondo a una estructura";
             case COMPOSED_OF -> from != NodeKind.HYPOTHESIS || to != NodeKind.HYPOTHESIS
                     ? "COMPOSED_OF va de una hipotesis compuesta a una de sus partes"
                     : reaches(r.to(), r.from(), RelationType.COMPOSED_OF) ? "Una hipotesis no puede ser parte de si misma" : null;

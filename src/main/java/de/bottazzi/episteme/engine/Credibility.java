@@ -16,6 +16,8 @@ import java.util.*;
  * sosten, apoyos, ataques = sum por raiz independiente de max(k * p(x))
  * L(deduccion)            = logit(min sobre sus premisas de k * p) - W * ataques + W * apoyos
  * </pre>
+ * Si un facto de fondo dice que el azar daria e de los n elementos independientes de una estructura, su
+ * sosten se multiplica por 1 - p(fondo) * min(1, e/n): cuentan solo los que superan al azar.
  * Los ataques son objeciones, contradicciones y tensiones.
  * Las patas de un nodo son las fuentes que cita (k = calidad de la cita) y los elementos de los que deriva.
  * Patas que comparten una raiz son copias: de ellas cuenta solo la mejor. Tres diarios que copian el mismo
@@ -85,7 +87,7 @@ public final class Credibility {
         }
         for (Relation r : g.outgoing(id))
             if (r.type().isSymmetric()) con.add(leg(r, r.to()));
-        return base + W * independent(pro) - W * independent(con);
+        return base + W * sum(independentGroups(pro)) - W * sum(independentGroups(con));
     }
 
     private double sustain(NodeId id) {
@@ -94,7 +96,20 @@ public final class Credibility {
             if (r.type() == RelationType.SOURCED_FROM || r.type() == RelationType.DERIVED_FROM)
                 legs.add(leg(r, r.to()));
         }
-        return W * independent(legs);
+        List<Double> groups = independentGroups(legs);
+        return W * sum(groups) * beyondChance(id, groups.size());
+    }
+
+    /**
+     * Que parte de los n elementos independientes supera al azar (D29): 1 - p(fondo) * min(1, e/n). De 40
+     * relatos, si el azar daria 14, cuentan 26. Con varios factos de fondo, cuenta el que mas descuenta.
+     */
+    private double beyondChance(NodeId id, int n) {
+        double discount = 0;
+        for (Relation r : g.incoming(id))
+            if (r.type() == RelationType.EXPECTED_BY_CHANCE)
+                discount = Math.max(discount, p(r.from()) * Math.min(1, r.expected() / n));
+        return 1 - discount;
     }
 
     /** Una deduccion no agrega contenido: vale lo que su premisa mas debil. Sin premisas, lo neutral. */
@@ -113,8 +128,8 @@ public final class Credibility {
     /** La pata que aporta el nodo other a traves de la relacion r. */
     private Leg leg(Relation r, NodeId other) { return new Leg(roots.get(other), r.strength() * p(other)); }
 
-    /** Une las patas que comparten alguna raiz y suma la mejor de cada grupo. */
-    private static double independent(List<Leg> legs) {
+    /** Une las patas que comparten alguna raiz y devuelve la mejor de cada grupo. */
+    private static List<Double> independentGroups(List<Leg> legs) {
         List<Set<NodeId>> groups = new ArrayList<>();
         List<Double> best = new ArrayList<>();
         for (Leg leg : legs) {
@@ -128,8 +143,10 @@ public final class Credibility {
             groups.add(rs);
             best.add(b);
         }
-        return best.stream().mapToDouble(Double::doubleValue).sum();
+        return best;
     }
+
+    private static double sum(List<Double> xs) { return xs.stream().mapToDouble(Double::doubleValue).sum(); }
 
     /** Credibilidad en (0, 1). */
     public double p(NodeId id) { return LogOdds.p(logit(id)); }

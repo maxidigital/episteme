@@ -204,6 +204,26 @@ class CredibilityTest {
         assertTrue(p(three, "S") > p(three, "T0"), "no queda por debajo de su elemento mas debil");
     }
 
+    /** D29: de los elementos independientes de una estructura cuentan solo los que superan al azar. */
+    @Test
+    void onlyElementsBeyondChanceCount() {
+        // Como en el ejemplo de 40 relatos contra 14 esperados, pero en chico para no saturar.
+        CaseBuilder eight = testimonies(8, false), four = testimonies(4, false);
+        for (CaseBuilder b : new CaseBuilder[]{eight, four})
+            b.source("cal", "calendario lunar").fact("B", "Por azar caerian unos 3 relatos en martes de luna llena")
+             .cites("B", "cal", 0.9).chance("B", "S", 3);
+        double pB = p(eight, "B"), pT = p(eight, "T0");
+        double expected = Math.log(0.2 / 0.8) + Credibility.W * 8 * pT * (1 - pB * 3 / 8.0);
+        assertEquals(expected, new Credibility(eight.log.current()).logit(id("S")), 1e-9);
+        assertTrue(p(eight, "S") > p(four, "S"));
+        assertTrue(p(four, "S") < p(testimonies(4, false), "S"), "el azar descuenta");
+
+        CaseBuilder fewer = testimonies(10, false).fact("B", "Por azar caerian 14").chance("B", "S", 14);
+        assertTrue(p(fewer, "S") > Credibility.NEUTRAL, "aunque el azar lo explique todo, nunca llega a cero");
+        assertThrows(IllegalArgumentException.class, () -> Relation.chance("r", "B", "S", 0));
+        assertThrows(IllegalStateException.class, () -> fewer.chance("T0", "B", 3));
+    }
+
     /** n relatos con una fuente cada uno; si copied, todas las fuentes derivan de la primera. */
     private static CaseBuilder testimonies(int n, boolean copied) {
         CaseBuilder b = new CaseBuilder().structure("S", "los relatos coinciden");

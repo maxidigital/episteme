@@ -31,7 +31,12 @@ public enum RelationType {
     /** from (hipotesis) entra en tension con to (estructura). */
     IN_TENSION_WITH,
     /** from (hipotesis compuesta) tiene a to (hipotesis) como parte. */
-    COMPOSED_OF;
+    COMPOSED_OF,
+    /**
+     * from (facto de conocimiento de fondo) dice cuantos elementos de to (estructura) daria el azar
+     * (Relation.expected). De los elementos de la estructura cuentan solo los que superan al azar (D29).
+     */
+    EXPECTED_BY_CHANCE;
 
     public boolean isSymmetric() { return this == CONTRADICTS || this == TENSION; }
 
@@ -39,5 +44,5 @@ public enum RelationType {
     public boolean isExplanatory() { return this == EXPLAINS || this == LEAVES_UNEXPLAINED || this == IN_TENSION_WITH; }
 
     /** Relaciones entre o desde hipotesis: no llevan peso propio. */
-    public boolean isUnweighted() { return isExplanatory() || this == COMPOSED_OF; }
+    public boolean isUnweighted() { return isExplanatory() || this == COMPOSED_OF || this == EXPECTED_BY_CHANCE; }
 }
