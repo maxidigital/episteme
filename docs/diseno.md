@@ -111,3 +111,5 @@ Se evalúan por las estructuras que explican, las que dejan sin explicar y con c
 5. A una persona se le puede preguntar y se puede probar con ella; un hecho histórico solo deja la evidencia que ya existe.
 
 *(lista de Claude, aceptada)*
+
+Alcance: "en principio el sistema no está pensado para analizar seres humanos; si en el futuro se desprende algo así, bienvenido". (Maxi) Por eso no se agrega por ahora un período de validez a cada elemento.
