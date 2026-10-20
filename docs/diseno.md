@@ -43,6 +43,14 @@ El cluster se abre cuando la IA o los usuarios lo determinan. (Maxi) Abrirlo no 
 
 Dentro del cluster, "el facto es cierto" compite con las hipótesis que implican las dudas (por ejemplo, "no hubo aviones, los videos están trucados"), y cada una se juzga por lo que explica. *(propuesta de Claude, aceptada)*
 
+### Observadores
+
+Lo que alguien dice y lo que le pasó son dos cosas distintas. "Juan dice que fue abducido" es un facto casi incontrovertible. "Juan fue abducido" es una hipótesis que compite con otras (parálisis del sueño, sueño vívido, mentira, recuerdo inducido).
+
+La credibilidad de un observador se parte en tres preguntas, cada una discutible con evidencia: **sinceridad** (¿cree lo que dice?), **competencia** (¿podía percibir bien?) e **independencia** (¿su relato está contaminado por otros?). Ejemplo, la escuela Ariel: sinceridad alta porque coordinar a 60 chicos es casi imposible (Maxi); competencia discutible porque son chicos; independencia discutible porque hablaron entre ellos después.
+
+**Nadie arranca con credibilidad propia: todos los observadores parten del mismo valor neutral, el único número fijo del sistema, y suben o bajan por argumentos.** *(propuesta de Claude, aceptada)*
+
 ### Grados
 
 F0-A prácticamente incontrovertible, F0-B establecido, F0-C debatido, F0-D polémico. En la charla original: "definidos por el nivel de credibilidad, medido por cantidad de dudas vertidas sobre el facto multiplicadas por el índice de dudarazonabilidad". (Maxi)
