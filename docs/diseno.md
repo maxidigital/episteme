@@ -99,3 +99,15 @@ Se evalúan por las estructuras que explican, las que dejan sin explicar y con c
 - **Cada parte de una hipótesis compuesta tiene que explicar al menos una estructura que las otras no explican. Si no, sobra.**
 
 *(propuesta de Claude, aceptada)*
+
+### Una persona no es un hecho histórico
+
+"No es lo mismo analizar a un ser humano que un hecho histórico." (Maxi) Las diferencias, todas aceptadas por Maxi:
+
+1. En una persona lo compuesto es lo normal: las hipótesis suelen sumarse en vez de competir.
+2. Una persona cambia: una hipótesis puede valer a los 20 años y no a los 40.
+3. El observador es el analizado: casi toda la evidencia es autorreporte, una sola raíz con sesgo de memoria.
+4. Analizar cambia lo analizado.
+5. A una persona se le puede preguntar y se puede probar con ella; un hecho histórico solo deja la evidencia que ya existe.
+
+*(lista de Claude, aceptada)*
