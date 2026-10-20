@@ -51,6 +51,10 @@ La credibilidad de un observador se parte en tres preguntas, cada una discutible
 
 **Nadie arranca con credibilidad propia: todos los observadores parten del mismo valor neutral, el único número fijo del sistema, y suben o bajan por argumentos.** *(propuesta de Claude, aceptada)*
 
+### El nivel depende del zoom
+
+Un mismo enunciado puede ser hipótesis dentro de su cluster y facto en un caso más grande. "Juan fue abducido" es nivel 2 dentro de su cluster, donde compite con otras explicaciones; desde afuera, ese cluster es una caja cerrada y su resultado entra como elemento de nivel 0 en un caso como "¿existen las abducciones?", pesando según cómo le fue adentro. Nunca es nivel 1: el nivel 1 son patrones, no explicaciones. *(propuesta de Claude, aceptada)*
+
 ### Grados
 
 F0-A prácticamente incontrovertible, F0-B establecido, F0-C debatido, F0-D polémico. En la charla original: "definidos por el nivel de credibilidad, medido por cantidad de dudas vertidas sobre el facto multiplicadas por el índice de dudarazonabilidad". (Maxi)
