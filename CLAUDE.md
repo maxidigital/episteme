@@ -23,22 +23,23 @@ Maxi trabaja en paralelo con Claude (chat) y con Claude Code, y la planilla es e
 2. **El sistema se regula solo con su matemática.** No hay moderadores que bloqueen debates: una objeción sin factos pesa casi nada y queda abajo.
 3. **No existe el 0 ni el 1.** Todo valor está en el intervalo abierto (0, 1), tiende a 0 pero nunca llega (regla de Cromwell). Implementado en log-odds.
 4. **Nada se borra.** Todo es un evento; las versiones y la historia salen del log.
-5. **Ningún valor se pone a mano: todo se deriva.** Nadie arranca con credibilidad propia: fuentes, factos y estructuras parten del mismo valor neutral (0.2, el de una afirmación sin sostén) y suben o bajan por argumentos. En una fuente, los argumentos son sobre su sinceridad, competencia o independencia (D18, D27).
-6. **Las copias no suman:** fuentes que derivan de la misma raíz cuentan como una.
+5. **Ninguna credibilidad se pone a mano: todo se deriva.** Nadie arranca con credibilidad propia: fuentes, factos y estructuras parten del mismo valor neutral (0.2, el de una afirmación sin sostén) y suben o bajan por argumentos. En una fuente, los argumentos son sobre su sinceridad, competencia o independencia (D18, D27). Siguen a mano la calidad de cada cita y la fuerza de cada relación.
+6. **Las copias no suman:** fuentes, elementos, apoyos y objeciones que derivan de la misma raíz cuentan como uno (D05, D16, D20).
 7. La "vida propia" del documento = un proceso que sigue corriendo y propagando cambios, como un thread. No es una metáfora biológica.
 
 Lo distribuido (red de nodos, bots, usuarios con árboles personales) es una idea a futuro, no está descartada pero no es el foco.
 
-**No es de Maxi, es de Claude:** juzgar hipótesis por predicciones y rankearlas. Está implementado (`HypothesisRanker`), pero Maxi lo considera sobreingeniería y lo dejó fuera de `IDEA.md`. No construir más sobre eso sin preguntarle.
+Las predicciones y el ranking de hipótesis (propuesta de Claude que Maxi consideró sobreingeniería) se sacaron del código el 21/10. Las hipótesis se juzgan por las estructuras que explican, dejan sin explicar o tensionan.
 
 ## Estado actual
 
-- Java 17, Maven, sin dependencias de runtime, JUnit 5. 21 tests (`mvn test`). `mvn -q compile exec:java` corre `Demo`.
-- Niveles: fuentes, factos y observaciones (0), estructuras (1), predicciones e hipótesis (2). Ver `README.md` para fórmulas.
-- `engine/Credibility`: punto fijo tipo PageRank en log-odds, amortiguado. W = 4, una afirmación sin sostén vale 0.2.
-- `engine/HypothesisRanker`: ajuste = cobertura − refutación.
+- El diseño validado por Maxi está en `docs/diseno.md` y manda sobre el código. Fase 1 de "Qué cambia en el código" hecha el 21/10; fase 2 (clusters, D17) pendiente.
+- Java 17, Maven, sin dependencias de runtime, JUnit 5. 34 tests (`mvn test`). `mvn -q compile exec:java` corre `Demo`. En esta máquina `java` es un JRE 21 sin `javac`: correr Maven con `JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64`.
+- Niveles: fuentes, observaciones, factos y deducciones (0), estructuras (1), hipótesis (2). Ver `README.md` para fórmulas.
+- `engine/Credibility`: punto fijo tipo PageRank en log-odds, amortiguado. W = 4. Todo parte de 0.2 (`NEUTRAL`), fuentes incluidas. Patas, apoyos y ataques se agrupan por raíz: de cada grupo cuenta el mejor.
+- `engine/HypothesisIndex`: L(H) = logit(0.2) + W·Σ p(S que explica) − W·Σ p(S que tensiona). Compuestas: unión de lo que explican sus partes, y se marca la parte que sobra.
 - Casos: `SemmelweisCase` (fiebre puerperal 1847, con fuentes reales y la objeción de 1848) y `BodyworkCase` (piloto del método de Maxi). Cada caso tiene etapas = versiones del log. El caso del helado se eliminó por pedido de Maxi: era demasiado pelado.
-- `docs/lab.html` replica el motor en JS y da los mismos números que Java a 6 decimales. Si se cambia la lógica, cambiar los dos y verificar paridad.
+- `docs/lab.html` replica el motor en JS (los dos casos) y da los mismos números que Java a 6 decimales. Si se cambia la lógica, cambiar los dos y correr `tools/parity.sh`.
 
 ## Antecedentes (para no reinventar)
 
@@ -48,11 +49,14 @@ Lo distintivo de esta idea frente a eso: base de factos compartida entre debates
 
 ## Problemas abiertos
 
-- Diagnosticidad: evidencia que confirman todas las hipótesis igual suma cobertura.
-- Predicción vs acomodación (predicciones escritas después de ver los datos).
-- Supuestos auxiliares (Duhem-Quine): una predicción que falla le pega a toda la hipótesis.
+- Diagnosticidad: dos hipótesis que explican la misma estructura suman lo mismo (H08 y H09 en bodywork empatan).
+- El índice de hipótesis satura: con W = 4, tres o cuatro estructuras creíbles lo llevan cerca de 1 y las diferencias se ven solo en log-odds.
+- Con todo en 0.2, casi nada es creíble hasta que alguien argumenta sobre sus fuentes. Una copia (Wikipedia) no hereda la credibilidad de su raíz: vale por sus propios argumentos.
+- El azar (D29) descuenta poco si el facto de fondo no tiene argumentos: su descuento se multiplica por su credibilidad.
+- Una objeción de independencia baja la credibilidad de la fuente, pero no la une a la raíz de otra. Las raíces solo salen de `derivedFrom`.
 - Fuentes falsas que dicen ser independientes (el equivalente a las granjas de enlaces de PageRank).
-- `derivedFrom` es por fuente, no por afirmación.
+- `derivedFrom` es por fuente, no por afirmación: los relatos propios de Semmelweis cuentan como copia de los registros.
+- La conjunción de D23 se revisa con los clusters (D26).
 - Persistencia del log; la parte comunitaria; usar un LLM para proponer árboles a partir de una frase (bajar el costo de formalizar).
 - Próximo caso pensado por Maxi: "el kirchnerismo desendeudó al país", descomponiendo la frase en métricas (deuda total vs con privados, moneda, % del PBI, período) con fuentes de distintos lados, sin tomar posición.
 
